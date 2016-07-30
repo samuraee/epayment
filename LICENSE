@@ -1,3 +1,23 @@
+# ePayment v1.0 for Laravel 5
+
+## Laravel
+
+After updating composer, add the PackageServiceProvider to the providers array in `config/app.php`
+
+    CuongHuynh\EasyPay2\PackageServiceProvider::class,
+
+You can optionally use the facade for shorter code. Add this to your facades:
+
+    'EasyPay2' => CuongHuynh\EasyPay2\Facades\EasyPay2Facade::class
+
+Publish the config-file.
+
+    php artisan vendor:publish
+
+You will have `epayment.php` in config folder
+
+
+
 The MIT License (MIT)
 
 Copyright (c) 2016 Aboozar Ghaffari

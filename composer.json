@@ -1,0 +1,29 @@
+{
+	"name": "iamtartan/epayment",
+	"description": "All Iranian payment gateways handler for laravel applications",
+	"keywords": ["payment","shetab", "bank", "epayment", "gateway", "iran"],
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Aboozar Ghafari <Tartan>",
+			"email": "iamtartan@gmail.com"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0",
+		"illuminate/support": "5.0.x|5.1.x|5.2.x"
+	},
+	"autoload": {
+		"psr-4": {
+			"Tartan\\Epayment\\": "src/Epayment"
+		}
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "5.2-dev"
+		}
+	},
+	"license": "MIT",
+	"minimum-stability": "dev"
+}
