@@ -25,7 +25,7 @@ class EpaymentServiceProvider extends ServiceProvider
 		], 'config');
 
 		$this->loadTranslationsFrom(
-			__DIR__ . '/../lang', 'epayment'
+			__DIR__ . '/../translations', 'epayment'
 		);
 	}
 	/**
