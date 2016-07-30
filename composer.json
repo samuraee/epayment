@@ -19,11 +19,5 @@
 			"Tartan\\Epayment\\": "src/Epayment"
 		}
 	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "5.2-dev"
-		}
-	},
-	"license": "MIT",
 	"minimum-stability": "stable"
 }
