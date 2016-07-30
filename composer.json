@@ -24,5 +24,6 @@
 			"dev-master": "5.2-dev"
 		}
 	},
-	"license": "MIT"
+	"license": "MIT",
+	"minimum-stability": "stable"
 }
