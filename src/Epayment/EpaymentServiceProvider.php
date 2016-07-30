@@ -12,8 +12,6 @@ class EpaymentServiceProvider extends ServiceProvider
 	 */
 	public function register()
 	{
-		$configPath = __DIR__ . '/../../config/epayment.php';
-		$this->mergeConfigFrom($configPath, 'epayment');
 	}
 	/**
 	 * Perform post-registration booting of services.
@@ -22,8 +20,13 @@ class EpaymentServiceProvider extends ServiceProvider
 	 */
 	public function boot()
 	{
-		$configPath = __DIR__ . '/../../config/epayment.php';
-		$this->publishes([$configPath => config_path('epayment.php')], 'config');
+		$this->publishes([
+			__DIR__ . '/../config/epayment.php' => config_path('epayment.php')
+		], 'config');
+
+		$this->loadTranslationsFrom(
+			__DIR__ . '/../lang', 'epayment'
+		);
 	}
 	/**
 	 * Get the services provided by the provider.
