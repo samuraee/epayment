@@ -81,7 +81,7 @@ class Saman extends AdapterAbstract
             $form .= sprintf('<input name="LogoURI" value="%s">', $this->_config['logo_uri']);
         }
 
-        $label = isset($this->_config['submitLabel']) ? $this->_config['submitLabel'] : trans("payment.goto_gateway");
+        $label = isset($this->_config['submitLabel']) ? $this->_config['submitLabel'] : trans("epayment::epayment.goto_gate");
 
         $form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 
