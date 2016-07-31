@@ -4,7 +4,6 @@ return [
 	'could_not_verify_transaction' => 'تایید تراکنش موفقیت آمیز نبود',
 	'double_spending' => 'امکان تایید تراکنش شما بدلیل تکراری بودن وجود ندارد',
 	'goto_gate' => 'اتصال به درگاه پرداخت',
-	'goto_gateway' => 'اتصال به درگاه پرداخت',
 	'invoice_handled_before' => ' این فاکتور قبلا رسیدگی شده است',
 	'invoice_not_found' => 'فاکتور مورد نظر پیدا نشد!',
 	'invalid_reference_id' => 'کد مرجع معتبر نیست!',

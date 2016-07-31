@@ -1,21 +1,17 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
-use Illuminate\Support\Facades\Lang;
 use SoapClient;
 use SoapFault;
 
 class Saman extends AdapterAbstract
 {
 
-	protected $_WSDL             = 'http://acquirer.sb24.com/ref-payment/ws/ReferencePayment?WSDL';
-	protected $_SECURE_WSDL      = 'https://acquirer.sb24.com/ref-payment/ws/ReferencePayment?WSDL';
+	protected $_WSDL             = 'https://acquirer.sb24.com/ref-payment/ws/ReferencePayment?WSDL';
 	protected $_END_POINT        = 'https://acquirer.sb24.com/CardServices/controller';
-	protected $_MOBILE_END_POINT = 'https://macquirer.samanepay.com/pay.php';
 
     protected $_TEST_WSDL        = 'http://banktest.ir/gateway/saman/ws?wsdl';
     protected $_TEST_END_POINT   = 'http://banktest.ir/gateway/saman/gate';
-    protected $_TEST_MOBILE_END_POINT = 'http://banktest.ir/gateway/saman/gate';
 
     public $reverseSupport = true;
 
@@ -73,11 +69,7 @@ class Saman extends AdapterAbstract
         $this->setOptions($options);
         $this->_checkRequiredOptions(['amount', 'terminal_id', 'reservation_number', 'redirect_url']);
 
-        if (isset($this->_config['isMobile']) && $this->_config['is_mobile']) {
-	        $action = $this->getEndPoint(true);
-        } else {
-	        $action = $this->getEndPoint();
-        }
+        $action = $this->getEndPoint();
 
         $form  = sprintf('<form id="goto-gate-form" method="post" action="%s">', $action );
         $form .= sprintf('<input type="hidden" name="Amount" value="%d">', $this->_config['amount']);
@@ -103,11 +95,7 @@ class Saman extends AdapterAbstract
 		$this->setOptions($options);
 		$this->_checkRequiredOptions(['amount', 'terminal_id', 'reservation_number', 'redirect_url']);
 
-		if (isset($this->_config['is_mobile']) && $this->_config['is_mobile']) {
-			$action = $this->getEndPoint(true);
-		} else {
-			$action = $this->getEndPoint();
-		}
+		$action = $this->getEndPoint();
 
 		try {
 			$this->_log($this->getWSDL());
@@ -136,7 +124,7 @@ class Saman extends AdapterAbstract
 			$form .= sprintf('<input name="LogoURI" value="%s">', $this->_config['logo_uri']);
 		}
 
-		$label = isset($this->_config['submit_label']) ? $this->_config['submit_label'] : trans("payment.goto_gateway");
+		$label = isset($this->_config['submit_label']) ? $this->_config['submit_label'] : trans("epayment::epayment.goto_gate");
 
 		$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 
@@ -155,11 +143,7 @@ class Saman extends AdapterAbstract
         }
 
         try {
-            if (isset($this->_config['useHttps']) && $this->_config['useHttps'] === false) {
-                $soapClient = new SoapClient($this->getWSDL());
-            } else {
-                $soapClient = new SoapClient($this->getWSDL(true));
-            }
+            $soapClient = new SoapClient($this->getWSDL());
 
             $res = $soapClient->VerifyTransaction(
                 $this->_config['ref_id'], $this->_config['terminal_id']
@@ -178,11 +162,7 @@ class Saman extends AdapterAbstract
         $this->_checkRequiredOptions(['ref_id', 'terminal_id', 'password', 'amount']);
 
         try {
-            if (isset($this->_config['use_https']) && $this->_config['use_https'] == false) {
-                $soapClient = new SoapClient($this->getWSDL());
-            } else {
-                $soapClient = new SoapClient($this->getWSDL(true));
-            }
+            $soapClient = new SoapClient($this->getWSDL());
 
             $res = $soapClient->reverseTransaction(
                 $this->_config['ref_id'],

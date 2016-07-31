@@ -1,21 +1,17 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
-use Illuminate\Support\Facades\Lang;
 use SoapClient;
 use SoapFault;
+use stdClass;
 
 class Parsian extends AdapterAbstract
 {
 	protected $_WSDL = 'https://www.pec24.com/pecpaymentgateway/EShopService.asmx?WSDL';
-	protected $_SECURE_WSDL = 'https://www.pec24.com/pecpaymentgateway/EShopService.asmx?WSDL';
 	protected $_END_POINT = 'https://www.pec24.com/pecpaymentgateway';
-	protected $_MOBILE_END_POINT = 'https://www.pec24.com/pecpaymentgateway';
 
 	protected $_TEST_WSDL = 'http://banktest.ir/gateway/parsian/ws?wsdl';
 	protected $_TEST_END_POINT = 'http://banktest.ir/gateway/parsian/gate';
-	protected $_TEST_MOBILE_END_POINT = 'http://banktest.ir/gateway/parsian/gate';
-
 
 	public $reverseSupport = true;
 
@@ -113,7 +109,7 @@ class Parsian extends AdapterAbstract
 			$form = sprintf('<form id="goto-bank-form" method="get" action="%s" class="form-horizontal">', $this->getEndPoint());
 			$form .= sprintf('<input type="hidden" name="au" value="%s" />', $authority);
 
-			$label = isset($this->_config['submitLabel']) ? $this->_config['submitLabel'] : Lang::trans("global.go_to_gateway");
+			$label = isset($this->_config['submitLabel']) ? $this->_config['submitLabel'] : trans("epayment::epayment.goto_gate");
 
 			$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 			$form .= '</form>';
@@ -154,7 +150,7 @@ class Parsian extends AdapterAbstract
 		$this->_checkRequiredOptions(['merchantCode', 'orderId', 'authority']);
 		try {
 			$soapClient         = new SoapClient($this->getWSDL());
-			$c                  = new StdClass();
+			$c                  = new stdClass();
 			$c->pin             = $this->_config['merchantCode'];
 			$c->status          = 1;
 			$c->orderId         = $this->_config['reverseOrderId'];

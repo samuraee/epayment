@@ -106,16 +106,11 @@ abstract class AdapterAbstract
 		return $this->_config;
 	}
 
-	public function getWSDL ($secure = false)
+	public function getWSDL ()
 	{
-		if (config('app.env') == 'production')
+		if (config('epayment.mode') == 'production')
 		{
-			if ($secure == true) {
-				return $this->_SECURE_WSDL;
-			}
-			else {
-				return $this->_WSDL;
-			}
+			return $this->_WSDL;
 		}
 		else {
 			return $this->_TEST_WSDL;
@@ -124,22 +119,12 @@ abstract class AdapterAbstract
 
 	public function getEndPoint ($mobile = false)
 	{
-		if (config('app.env') == 'production')
+		if (config('epayment.mode') == 'production')
 		{
-			if ($mobile == true) {
-				return $this->_MOBILE_END_POINT;
-			}
-			else {
-				return $this->_END_POINT;
-			}
+			return $this->_END_POINT;
 		}
 		else {
-			if ($mobile == true) {
-				return $this->_TEST_MOBILE_END_POINT;
-			}
-			else {
-				return $this->_TEST_END_POINT;
-			}
+			return $this->_TEST_END_POINT;
 		}
 	}
 

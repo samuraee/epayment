@@ -1,6 +1,16 @@
 <?php
 
 return [
+	/*
+	|--------------------------------------------------------------------------
+	| Operation mode
+	|--------------------------------------------------------------------------
+	|
+	| Available Settings: "production", "test"
+	|
+	*/
+	'mode' => env('EPAYMENT_MODE', 'production'),
+
 	'saman' => [
 		'terminal_id'   => env('SAMAN_TERMINAL_ID', 'merchantId'),
 		'terminal_pass' => env('SAMAN_TERMINAL_PASS', 'merchantPass')
