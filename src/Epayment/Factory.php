@@ -44,7 +44,7 @@ class Factory
 	 * @return \Tartan\Epayment\Adapter\AdapterAbstract
 	 * @throws \Tartan\Epayment\Exception
 	 */
-    public static function made($adapter, array $options = [], array $banks = [])
+    public static function make($adapter, array $options = [], array $banks = [])
     {
         if (!is_array($options)) {
             throw new Exception(
