@@ -7,8 +7,8 @@ use stdClass;
 
 class Parsian extends AdapterAbstract
 {
-	protected $_WSDL = 'https://www.pec24.com/pecpaymentgateway/EShopService.asmx?WSDL';
-	protected $_END_POINT = 'https://www.pec24.com/pecpaymentgateway';
+	protected $_WSDL = 'https://pec.shaparak.ir/pecpaymentgateway/eshopservice.asmx?WSDL';
+	protected $_END_POINT = 'https://pec.shaparak.ir/pecpaymentgateway';
 
 	protected $_TEST_WSDL = 'http://banktest.ir/gateway/parsian/ws?wsdl';
 	protected $_TEST_END_POINT = 'http://banktest.ir/gateway/parsian/gate';
@@ -78,7 +78,7 @@ class Parsian extends AdapterAbstract
 		}
 
 		if (!isset($this->_config['authority'])) {
-			$this->_config['authority'] = 0;
+			$this->_config['authority'] = 0; //default authority
 		}
 
 		try {
@@ -89,7 +89,7 @@ class Parsian extends AdapterAbstract
 				'pin'         => $this->_config['merchantCode'],
 				'amount'      => $this->_config['amount'],
 				'orderId'     => $this->_config['orderId'],
-				'callbackUrl' => $this->_config['redirectAddress'] . '/iN/' . $this->_config['orderId'],
+				'callbackUrl' => $this->_config['redirectAddress'],
 				'authority'   => $this->_config['authority'],
 				'status'      => $this->_config['status']
 			);
