@@ -7,8 +7,8 @@ use SoapFault;
 class Saman extends AdapterAbstract
 {
 
-	protected $_WSDL             = 'https://acquirer.sb24.com/ref-payment/ws/ReferencePayment?WSDL';
-	protected $_END_POINT        = 'https://acquirer.sb24.com/CardServices/controller';
+	protected $_WSDL             = 'https://sep.shaparak.ir/ref-payment/ws/ReferencePayment?WSDL';
+	protected $_END_POINT        = 'https://sep.shaparak.ir/CardServices/controller';
 
     protected $_TEST_WSDL        = 'http://banktest.ir/gateway/saman/ws?wsdl';
     protected $_TEST_END_POINT   = 'http://banktest.ir/gateway/saman/gate';
@@ -81,7 +81,7 @@ class Saman extends AdapterAbstract
             $form .= sprintf('<input name="LogoURI" value="%s">', $this->_config['logo_uri']);
         }
 
-        $label = isset($this->_config['submitLabel']) ? $this->_config['submitLabel'] : trans("epayment::epayment.goto_gate");
+        $label = isset($this->_config['submit_label']) ? $this->_config['submit_label'] : trans("epayment::epayment.goto_gate");
 
         $form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 
