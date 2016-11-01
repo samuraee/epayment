@@ -24,7 +24,7 @@ class Parsian extends AdapterAbstract
 			switch ($name) {
 				case 'in':
 					if (preg_match('/^[a-z0-9]+$/', $value))
-						$this->reservationNumber = $value;
+						$this->order_id = $value;
 					break;
 				case 'au':
 					if (preg_match('/^[a-z0-9]+$/', $value))
@@ -43,35 +43,23 @@ class Parsian extends AdapterAbstract
 
 	public function getInvoiceId ()
 	{
-		if (!isset($this->_config['orderId'])) {
-			return null;
-		}
-
-		return $this->_config['orderId'];
+		return $this->order_id;
 	}
 
 	public function getReferenceId ()
 	{
-		if (!isset($this->_config['authority'])) {
-			return null;
-		}
-
-		return $this->_config['authority'];
+		return $this->authority;
 	}
 
 	public function getStatus ()
 	{
-		if (!isset($this->_config['state'])) {
-			return null;
-		}
-
-		return $this->_config['state'];
+		return $this->state;
 	}
 
 	public function doGenerateForm (array $options = [])
 	{
 		$this->setOptions($options);
-		$this->_checkRequiredOptions(['merchantCode', 'amount', 'orderId', 'redirectAddress']);
+		$this->_checkRequiredOptions(['terminal_id', 'amount', 'order_id', 'redirect_address']);
 
 		if (!isset($this->_config['status'])) {
 			$this->_config['status'] = 1;
@@ -86,10 +74,10 @@ class Parsian extends AdapterAbstract
 			$soapClient = new SoapClient($this->getWSDL());
 
 			$sendParams = array(
-				'pin'         => $this->_config['merchantCode'],
+				'pin'         => $this->_config['terminal_id'],
 				'amount'      => $this->_config['amount'],
-				'orderId'     => $this->_config['orderId'],
-				'callbackUrl' => $this->_config['redirectAddress'],
+				'orderId'     => $this->_config['order_id'],
+				'callbackUrl' => $this->_config['redirect_address'],
 				'authority'   => $this->_config['authority'],
 				'status'      => $this->_config['status']
 			);
@@ -106,11 +94,9 @@ class Parsian extends AdapterAbstract
 
 		if (($authority) && ($status == 0))
 		{
-			$form = sprintf('<form id="goto-bank-form" method="get" action="%s" class="form-horizontal">', $this->getEndPoint());
+			$form  = sprintf('<form id="goto-bank-form" method="get" action="%s">', $this->getEndPoint());
 			$form .= sprintf('<input type="hidden" name="au" value="%s" />', $authority);
-
-			$label = isset($this->_config['submitLabel']) ? $this->_config['submitLabel'] : trans("epayment::epayment.goto_gate");
-
+			$label = isset($this->_config['submit_label']) ? $this->_config['submit_label'] : trans("epayment::epayment.goto_gate");
 			$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 			$form .= '</form>';
 
@@ -123,12 +109,12 @@ class Parsian extends AdapterAbstract
 	public function doVerifyTransaction (array $options = array())
 	{
 		$this->setOptions($options);
-		$this->_checkRequiredOptions(['authority', 'merchantCode']);
+		$this->_checkRequiredOptions(['terminal_id', 'authority']);
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 			$sendParams = array(
-				'pin'       => $this->_config['merchantCode'],
+				'pin'       => $this->_config['terminal_id'],
 				'authority' => $this->_config['authority'],
 				'status'    => 1
 			);
@@ -147,14 +133,14 @@ class Parsian extends AdapterAbstract
 	public function doReverseTransaction (array $options = array())
 	{
 		$this->setOptions($options);
-		$this->_checkRequiredOptions(['merchantCode', 'orderId', 'authority']);
+		$this->_checkRequiredOptions(['terminal_id', 'order_id', 'authority']);
 		try {
 			$soapClient         = new SoapClient($this->getWSDL());
 			$c                  = new stdClass();
-			$c->pin             = $this->_config['merchantCode'];
+			$c->pin             = $this->_config['terminal_id'];
 			$c->status          = 1;
-			$c->orderId         = $this->_config['reverseOrderId'];
-			$c->orderToReversal = $this->_config['orderId'];
+			$c->orderId         = $this->_config['reverse_order_id'];
+			$c->orderToReversal = $this->_config['order_id'];
 
 			$res = $soapClient->PinReversal($c);
 		} catch (SoapFault $e) {
