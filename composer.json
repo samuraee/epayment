@@ -7,12 +7,13 @@
 	"authors": [
 		{
 			"name": "Aboozar Ghafari <Tartan>",
-			"email": "iamtartan@gmail.com"
+			"email": "iamtartan@gmail.com",
+			"website" : "tartan.tk"
 		}
 	],
 	"require": {
 		"php": ">=5.4.0",
-		"illuminate/support": "5.0.x|5.1.x|5.2.x"
+		"illuminate/support": "5.x.x"
 	},
 	"autoload": {
 		"psr-4": {
