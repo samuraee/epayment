@@ -26,7 +26,7 @@ abstract class AdapterAbstract
 	public function __set ($key, $val)
 	{
 		$key = strtolower($key);
-		$this->setOptions([$key => $val]);
+		$this->_config[$key] = $val;
 	}
 
 	public function __get ($key)

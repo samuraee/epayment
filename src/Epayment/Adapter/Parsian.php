@@ -61,12 +61,12 @@ class Parsian extends AdapterAbstract
 		$this->setOptions($options);
 		$this->_checkRequiredOptions(['terminal_id', 'amount', 'order_id', 'redirect_address']);
 
-		if (!isset($this->_config['status'])) {
-			$this->_config['status'] = 1;
+		if (!$this->status) {
+			$this->status = 1;
 		}
 
-		if (!isset($this->_config['authority'])) {
-			$this->_config['authority'] = 0; //default authority
+		if (!$this->authority) {
+			$this->authority = 0; //default authority
 		}
 
 		try {
@@ -74,12 +74,12 @@ class Parsian extends AdapterAbstract
 			$soapClient = new SoapClient($this->getWSDL());
 
 			$sendParams = array(
-				'pin'         => $this->_config['terminal_id'],
-				'amount'      => $this->_config['amount'],
-				'orderId'     => $this->_config['order_id'],
-				'callbackUrl' => $this->_config['redirect_address'],
-				'authority'   => $this->_config['authority'],
-				'status'      => $this->_config['status']
+				'pin'         => $this->terminal_id,
+				'amount'      => $this->amount,
+				'orderId'     => $this->order_id,
+				'callbackUrl' => $this->redirect_address,
+				'authority'   => $this->authority,
+				'status'      => $this->status
 			);
 
 			$res = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
@@ -96,7 +96,7 @@ class Parsian extends AdapterAbstract
 		{
 			$form  = sprintf('<form id="goto-bank-form" method="get" action="%s">', $this->getEndPoint());
 			$form .= sprintf('<input type="hidden" name="au" value="%s" />', $authority);
-			$label = isset($this->_config['submit_label']) ? $this->_config['submit_label'] : trans("epayment::epayment.goto_gate");
+			$label = $this->submit_label ? $this->submit_label : trans("epayment::epayment.goto_gate");
 			$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 			$form .= '</form>';
 
@@ -114,8 +114,8 @@ class Parsian extends AdapterAbstract
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 			$sendParams = array(
-				'pin'       => $this->_config['terminal_id'],
-				'authority' => $this->_config['authority'],
+				'pin'       => $this->terminal_id,
+				'authority' => $this->authority,
 				'status'    => 1
 			);
 			$res        = $soapClient->__soapCall('PinPaymentEnquiry', $sendParams);
@@ -137,10 +137,10 @@ class Parsian extends AdapterAbstract
 		try {
 			$soapClient         = new SoapClient($this->getWSDL());
 			$c                  = new stdClass();
-			$c->pin             = $this->_config['terminal_id'];
+			$c->pin             = $this->terminal_id;
 			$c->status          = 1;
-			$c->orderId         = $this->_config['reverse_order_id'];
-			$c->orderToReversal = $this->_config['order_id'];
+			$c->orderId         = $this->reverse_order_id;
+			$c->orderToReversal = $this->order_id;
 
 			$res = $soapClient->PinReversal($c);
 		} catch (SoapFault $e) {

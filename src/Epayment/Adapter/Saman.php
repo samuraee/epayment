@@ -23,10 +23,10 @@ class Saman extends AdapterAbstract
 		foreach ($this->_config as $name => $value) {
 			switch ($name) {
 				case 'resnum':
-						$this->_config['reservation_number'] = $value;
+						$this->order_id = $value;
 					break;
 				case 'refnum':
-						$this->_config['ref_id'] = $value;
+						$this->ref_id = $value;
 					break;
 			}
 		}
@@ -34,31 +34,22 @@ class Saman extends AdapterAbstract
 
     public function getInvoiceId()
     {
-        if (!isset($this->_config['reservation_number'])) {
-            return null;
-        }
-        return $this->_config['reservation_number'];
+        return $this->order_id;
     }
 
     public function getReferenceId()
     {
-        if (!isset($this->_config['ref_id'])) {
-            return null;
-        }
-        return $this->_config['ref_id'];
+        return $this->ref_id;
     }
 
     public function getStatus()
     {
-        if (!isset($this->_config['state'])) {
-            return null;
-        }
-        return $this->_config['state'];
+        return $this->state;
     }
 
     public function doGenerateForm(array $options = array())
     {
-	    if (isset($this->_config['with_token']) && $this->_config['with_token']) {
+	    if ($this->with_token) {
 		    return $this->doGenerateFormWithToken($options);
 	    } else {
 		    return $this->doGenerateFormWithoutToken($options); // default
@@ -67,21 +58,21 @@ class Saman extends AdapterAbstract
     public function doGenerateFormWithoutToken(array $options = array())
     {
         $this->setOptions($options);
-        $this->_checkRequiredOptions(['amount', 'terminal_id', 'reservation_number', 'redirect_url']);
+        $this->_checkRequiredOptions(['amount', 'terminal_id', 'order_id', 'redirect_url']);
 
         $action = $this->getEndPoint();
 
         $form  = sprintf('<form id="goto-gate-form" method="post" action="%s">', $action );
-        $form .= sprintf('<input type="hidden" name="Amount" value="%d">', $this->_config['amount']);
-        $form .= sprintf('<input type="hidden" name="MID" value="%s">', $this->_config['terminal_id']);
-        $form .= sprintf('<input type="hidden" name="ResNum" value="%s">', $this->_config['reservation_number']);
-        $form .= sprintf('<input type="hidden" name="RedirectURL" value="%s">', $this->_config['redirect_url']);
+        $form .= sprintf('<input type="hidden" name="Amount" value="%d">', $this->amount);
+        $form .= sprintf('<input type="hidden" name="MID" value="%s">', $this->terminal_id);
+        $form .= sprintf('<input type="hidden" name="ResNum" value="%s">', $this->order_id);
+        $form .= sprintf('<input type="hidden" name="RedirectURL" value="%s">', $this->redirect_url);
 
-        if (isset($this->_config['logo_uri'])) {
-            $form .= sprintf('<input name="LogoURI" value="%s">', $this->_config['logo_uri']);
+        if (isset($this->logo_uri)) {
+            $form .= sprintf('<input name="LogoURI" value="%s">', $this->logo_uri);
         }
 
-        $label = isset($this->_config['submit_label']) ? $this->_config['submit_label'] : trans("epayment::epayment.goto_gate");
+        $label = $this->submit_label ? $this->submit_label : trans("epayment::epayment.goto_gate");
 
         $form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 
@@ -93,7 +84,7 @@ class Saman extends AdapterAbstract
 	public function doGenerateFormWithToken(array $options = array())
 	{
 		$this->setOptions($options);
-		$this->_checkRequiredOptions(['amount', 'terminal_id', 'reservation_number', 'redirect_url']);
+		$this->_checkRequiredOptions(['amount', 'terminal_id', 'order_id', 'redirect_url']);
 
 		$action = $this->getEndPoint();
 
@@ -102,9 +93,9 @@ class Saman extends AdapterAbstract
 			$soapClient = new SoapClient($this->getWSDL());
 
 			$sendParams = array(
-				'pin'         => $this->_config['terminal_id'],
-				'amount'      => $this->_config['amount'],
-				'orderId'     => $this->_config['order_id']
+				'pin'         => $this->terminal_id,
+				'amount'      => $this->amount,
+				'orderId'     => $this->order_id
 			);
 
 			$res = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
@@ -115,16 +106,16 @@ class Saman extends AdapterAbstract
 		}
 
 		$form  = sprintf('<form id="goto-bank-form" method="post" action="%s" class="form-horizontal">', $action );
-		$form .= sprintf('<input name="Amount" value="%d">', $this->_config['amount']);
-		$form .= sprintf('<input name="MID" value="%s">', $this->_config['terminal_id']);
-		$form .= sprintf('<input name="ResNum" value="%s">', $this->_config['reservation_number']);
-		$form .= sprintf('<input name="RedirectURL" value="%s">', $this->_config['redirect_url']);
+		$form .= sprintf('<input name="Amount" value="%d">', $this->amount);
+		$form .= sprintf('<input name="MID" value="%s">', $this->terminal_id);
+		$form .= sprintf('<input name="ResNum" value="%s">', $this->order_id);
+		$form .= sprintf('<input name="RedirectURL" value="%s">', $this->redirect_url);
 
-		if (isset($this->_config['logo_uri'])) {
-			$form .= sprintf('<input name="LogoURI" value="%s">', $this->_config['logo_uri']);
+		if (isset($this->logo_uri)) {
+			$form .= sprintf('<input name="LogoURI" value="%s">', $this->logo_uri);
 		}
 
-		$label = isset($this->_config['submit_label']) ? $this->_config['submit_label'] : trans("epayment::epayment.goto_gate");
+		$label = $this->submit_label ? $this->submit_label : trans("epayment::epayment.goto_gate");
 
 		$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
 
@@ -138,15 +129,15 @@ class Saman extends AdapterAbstract
         $this->setOptions($options);
         $this->_checkRequiredOptions(['ref_id', 'terminal_id', 'state']);
 
-        if ($this->_config['ref_id'] == '') {
-	        throw new Exception('Error: ' . $this->_config['state']);
+        if ($this->ref_id == '') {
+	        throw new Exception('Error: ' . $this->state);
         }
 
         try {
             $soapClient = new SoapClient($this->getWSDL());
 
             $res = $soapClient->VerifyTransaction(
-                $this->_config['ref_id'], $this->_config['terminal_id']
+                $this->ref_id, $this->terminal_id
             );
         } catch (SoapFault $e) {
             $this->_log($e->getMessage());
@@ -165,10 +156,10 @@ class Saman extends AdapterAbstract
             $soapClient = new SoapClient($this->getWSDL());
 
             $res = $soapClient->reverseTransaction(
-                $this->_config['ref_id'],
-                $this->_config['terminal_id'],
-                $this->_config['password'],
-                $this->_config['amount']
+                $this->ref_id,
+                $this->terminal_id,
+                $this->password,
+                $this->amount
             );
         } catch (SoapFault $e) {
             $this->_log($e->getMessage());
