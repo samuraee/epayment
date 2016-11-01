@@ -6,20 +6,12 @@ use Illuminate\Support\Facades\Log;
 abstract class AdapterAbstract
 {
 	protected $_END_POINT = null;
-
-	protected $_MOBILE_END_POINT = null;
-
 	protected $_WSDL = null;
 
-	protected $_SECURE_WSDL = null;
-
 	protected $_TEST_WSDL = null;
-
 	protected $_TEST_END_POINT = null;
 
-	protected $_TEST_MOBILE_END_POINT = null;
-
-	protected $_config = array();
+	protected $_config = [];
 
 	public $reverseSupport = false;
 
