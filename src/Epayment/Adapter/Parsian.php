@@ -59,7 +59,7 @@ class Parsian extends AdapterAbstract
 	public function doGenerateForm (array $options = [])
 	{
 		$this->setOptions($options);
-		$this->_checkRequiredOptions(['terminal_id', 'amount', 'order_id', 'redirect_address']);
+		$this->_checkRequiredOptions(['terminal_id', 'amount', 'order_id', 'redirect_url']);
 
 		if (!$this->status) {
 			$this->status = 1;
@@ -77,7 +77,7 @@ class Parsian extends AdapterAbstract
 				'pin'         => $this->terminal_id,
 				'amount'      => $this->amount,
 				'orderId'     => $this->order_id,
-				'callbackUrl' => $this->redirect_address,
+				'callbackUrl' => $this->redirect_url,
 				'authority'   => $this->authority,
 				'status'      => $this->status
 			);
