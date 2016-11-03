@@ -71,7 +71,7 @@ class Parsian extends AdapterAbstract
 
 		try {
 			$this->_log($this->getWSDL());
-			$soapClient = new SoapClient($this->getWSDL());
+			$soapClient = $this->getSoapClient();
 
 			$sendParams = array(
 				'pin'         => $this->terminal_id,
@@ -112,7 +112,7 @@ class Parsian extends AdapterAbstract
 		$this->_checkRequiredOptions(['terminal_id', 'authority']);
 
 		try {
-			$soapClient = new SoapClient($this->getWSDL());
+			$soapClient = $this->getSoapClient();
 			$sendParams = array(
 				'pin'       => $this->terminal_id,
 				'authority' => $this->authority,
@@ -135,7 +135,7 @@ class Parsian extends AdapterAbstract
 		$this->setOptions($options);
 		$this->_checkRequiredOptions(['terminal_id', 'order_id', 'authority']);
 		try {
-			$soapClient         = new SoapClient($this->getWSDL());
+			$soapClient = $this->getSoapClient();
 			$c                  = new stdClass();
 			$c->pin             = $this->terminal_id;
 			$c->status          = 1;

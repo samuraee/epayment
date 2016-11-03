@@ -2,6 +2,7 @@
 namespace Tartan\Epayment\Adapter;
 
 use Illuminate\Support\Facades\Log;
+use SoapClient;
 
 abstract class AdapterAbstract
 {
@@ -148,6 +149,11 @@ abstract class AdapterAbstract
 	public function validateReturnsAmount()
 	{
 		return $this->validateReturnsAmount;
+	}
+
+	public function getSoapClient()
+	{
+		return new SoapClient($this->getWSDL());
 	}
 
 	public function init () {}
