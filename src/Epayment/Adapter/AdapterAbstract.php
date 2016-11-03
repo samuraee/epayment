@@ -153,7 +153,14 @@ abstract class AdapterAbstract
 
 	public function getSoapClient()
 	{
-		return new SoapClient($this->getWSDL());
+		$options = [
+//			'login'       => config('api.basic.username'),
+//			'password'    => config('api.basic.password'),
+//			 'proxy_host' => 'localhost',
+//			 'proxy_port' => '8080'
+		];
+
+		return new SoapClient($this->getWSDL(), $options);
 	}
 
 	public function init () {}
