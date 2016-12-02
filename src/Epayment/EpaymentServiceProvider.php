@@ -34,7 +34,7 @@ class EpaymentServiceProvider extends ServiceProvider
 	 *
 	 * @return array
 	 */
-	public function provides()
+	public function register()
 	{
 		return [];
 	}
