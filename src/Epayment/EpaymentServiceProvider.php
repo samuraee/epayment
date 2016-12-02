@@ -16,17 +16,18 @@ class EpaymentServiceProvider extends ServiceProvider
 			__DIR__ . '/../../config/epayment.php' => config_path('epayment.php')
 		], 'config');
 
-		$this->loadTranslationsFrom(
-			__DIR__ . '/../../translations', 'epayment'
-		);
+		$this->publishes([
+			__DIR__ . '/../../views/' => resource_path('/views/vendor/epayment'),
+		], 'views');
 
-		$views  = __DIR__ . '/../../views/';
-
-		$this->loadViewsFrom($views, 'epayment');
+		$this->loadViewsFrom(__DIR__ . '/../../views/', 'epayment');
 
 		$this->publishes([
-			$views => base_path('resources/views/vendor/epayment'),
-		], 'views');
+			__DIR__ . '/../../translations/' => resource_path('lang/vendor/epayment'),
+		], 'translations');
+
+		$this->loadTranslationsFrom(__DIR__ . '/../../translations', 'epayment');
+
 	}
 	/**
 	 * Get the services provided by the provider.
