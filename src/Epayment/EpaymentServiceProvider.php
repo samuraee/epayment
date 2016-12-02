@@ -6,14 +6,6 @@ use Illuminate\Support\ServiceProvider;
 class EpaymentServiceProvider extends ServiceProvider
 {
 	/**
-	 * Register the application services.
-	 *
-	 * @return void
-	 */
-	public function register()
-	{
-	}
-	/**
 	 * Perform post-registration booting of services.
 	 *
 	 * @return void
@@ -21,12 +13,20 @@ class EpaymentServiceProvider extends ServiceProvider
 	public function boot()
 	{
 		$this->publishes([
-			__DIR__ . '/../config/epayment.php' => config_path('epayment.php')
+			__DIR__ . '/../../config/epayment.php' => config_path('epayment.php')
 		], 'config');
 
 		$this->loadTranslationsFrom(
-			__DIR__ . '/../translations', 'epayment'
+			__DIR__ . '/../../translations', 'epayment'
 		);
+
+		$views  = __DIR__ . '/../../views/';
+
+		$this->loadViewsFrom($views, 'epayment');
+
+		$this->publishes([
+			$views => base_path('resources/views/vendor/epayment'),
+		], 'views');
 	}
 	/**
 	 * Get the services provided by the provider.

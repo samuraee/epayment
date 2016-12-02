@@ -3,9 +3,13 @@ namespace Tartan\Epayment\Adapter;
 
 interface AdapterInterface
 {
-    public function generateForm($options);
+	public function setParameters($parameters);
 
-    public function verifyTransaction($options);
+    public function generateForm();
 
-    public function reverseTransaction($options);
+    public function verifyTransaction();
+
+    public function reverseTransaction();
+
+	public function settleTransaction();
 }

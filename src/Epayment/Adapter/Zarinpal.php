@@ -1,7 +1,7 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
-class Zarinpal extends AdapterAbstract
+class Zarinpal extends AdapterAbstract implements AdapterInterface
 {
     const INCOMPLETE_DATA = 'Incomplete data';
     const INVALID_WEBSERVICE = 'Invalid webservice';

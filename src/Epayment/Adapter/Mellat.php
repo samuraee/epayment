@@ -3,179 +3,300 @@ namespace Tartan\Epayment\Adapter;
 
 use SoapClient;
 use SoapFault;
-use stdClass;
+use Tartan\Epayment\Adapter\Mellat\Exception;
 
-class Mellat extends AdapterAbstract
+class Mellat extends AdapterAbstract implements AdapterInterface
 {
-	protected $_WSDL = 'https://pgws.bpm.bankmellat.ir/pgwchannel/services/pgw?wsdl';
-	protected $_END_POINT = 'https://pgw.bpm.bankmellat.ir/pgwchannel/startpay.mellat';
+	protected $WSDL = 'https://bpm.shaparak.ir/pgwchannel/services/pgw?wsdl';
+	protected $endPoint = 'https://pgw.bpm.bankmellat.ir/pgwchannel/startpay.mellat';
 
-	protected $_TEST_WSDL = 'http://banktest.ir/gateway/mellat/ws?wsdl';
-	protected $_TEST_END_POINT = 'http://banktest.ir/gateway/mellat/gate';
+	protected $testWSDL = 'http://banktest.ir/gateway/mellat/ws?wsdl';
+	protected $testEndPoint = 'http://banktest.ir/gateway/mellat/gate';
 
-	public $reverseSupport = true;
+	protected $reverseSupport = true;
+	protected $validateReturnsAmount = false;
 
-	public $validateReturnsAmount = false;
-
-	public function setOptions (array $options = [])
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	public function requestToken()
 	{
-		parent::setOptions($options);
-		foreach ($this->_config as $name => $value) {
-			switch ($name) {
-				case 'in':
-					if (preg_match('/^[a-z0-9]+$/', $value))
-						$this->reservationNumber = $value;
-					break;
-				case 'au':
-					if (preg_match('/^[a-z0-9]+$/', $value))
-						$this->authority = $value;
-					break;
-				case 'rs':
-					if ($value !== '0') {
-						throw new Exception('Invalid Request at ' . __METHOD__);
-					}
-					else {
-						$this->state = '0';
-					}
-			}
-		}
-	}
-
-	public function getInvoiceId ()
-	{
-		if (!isset($this->_config['orderId'])) {
-			return null;
+		if($this->getInvoice()->checkForRequestToken() == false) {
+			throw new Exception('epayment::epayment.could_not_request_payment');
 		}
 
-		return $this->_config['orderId'];
-	}
-
-	public function getReferenceId ()
-	{
-		if (!isset($this->_config['authority'])) {
-			return null;
-		}
-
-		return $this->_config['authority'];
-	}
-
-	public function getStatus ()
-	{
-		if (!isset($this->_config['state'])) {
-			return null;
-		}
-
-		return $this->_config['state'];
-	}
-
-	public function doGenerateForm (array $options = [])
-	{
-		$this->setOptions($options);
-		$this->_checkRequiredOptions([
-			'terminalId',
-			'userName',
-			'userPassword',
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'username',
+			'password',
+			'order_id',
 			'amount',
-			'localDate',
-			'localTime',
-			'additionalData',
-			'callBackUrl',
-			'payerId',
-			'orderId'
+			'redirect_url',
 		]);
 
-		if (!isset($this->_config['status'])) {
-			$this->_config['status'] = 1;
-		}
-
-		if (!isset($this->_config['authority'])) {
-			$this->_config['authority'] = 0; //default authority
-		}
-
-		try {
-			$this->_log($this->getWSDL());
-			$soapClient = new SoapClient($this->getWSDL());
-
-			$sendParams = array(
-				'pin'         => $this->_config['merchantCode'],
-				'amount'      => $this->_config['amount'],
-				'orderId'     => $this->_config['orderId'],
-				'callbackUrl' => $this->_config['redirectAddress'],
-				'authority'   => $this->_config['authority'],
-				'status'      => $this->_config['status']
-			);
-
-			$res = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
-
-		} catch (SoapFault $e) {
-			$this->_log($e->getMessage());
-			throw new Exception('SOAP Exception: ' . $e->getMessage());
-		}
-
-		$status    = $res->status;
-		$authority = $res->authority;
-
-		if (($authority) && ($status == 0))
-		{
-			$form = sprintf('<form id="goto-bank-form" method="get" action="%s" class="form-horizontal">', $this->getEndPoint());
-			$form .= sprintf('<input type="hidden" name="au" value="%s" />', $authority);
-
-			$label = isset($this->_config['submitLabel']) ? $this->_config['submitLabel'] : trans("epayment::epayment.goto_gate");
-
-			$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
-			$form .= '</form>';
-
-			return $form;
-		} else {
-			throw new Exception('Error: non 0 status : ' . $status);
-		}
-	}
-
-	public function doVerifyTransaction (array $options = array())
-	{
-		$this->setOptions($options);
-		$this->_checkRequiredOptions(['authority', 'merchantCode']);
+		$sendParams = [
+			'terminalId'     => $this->terminal_id,
+			'userName'       => $this->username,
+			'userPassword'   => $this->password,
+			'orderId'        => $this->order_id,
+			'amount'         => intval($this->amount),
+			'localDate'      => $this->local_date ? $this->local_date : date('Ymd'),
+			'localTime'      => $this->local_time ? $this->local_time : date('His'),
+			'additionalData' => $this->additional_data ? $this->additional_data : '',
+			'callBackUrl'    => $this->redirect_url,
+			'payerId'        => intval($this->payer_id),
+		];
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
-			$sendParams = array(
-				'pin'       => $this->_config['merchantCode'],
-				'authority' => $this->_config['authority'],
-				'status'    => 1
-			);
-			$res        = $soapClient->__soapCall('PinPaymentEnquiry', $sendParams);
-		} catch (SoapFault $e) {
-			$this->_log($e->getMessage());
-			throw new Exception('SOAP Exception: ' . $e->getMessage());
-		}
 
-		if ($res->status == 0)
-			return 1;
-		else
-			return -1 * $res->status;
+			$response = $soapClient->bpPayRequest($sendParams);
+
+			if (isset($response->return)) {
+				$response = explode(',', $response->return);
+
+				if ($response[0] == 0) {
+					$this->setInvoiceReferenceId($response[1]); // update invoice reference id
+					return $response[1];
+				}
+				else {
+					throw new Exception($response[0]);
+				}
+			} else {
+				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+			}
+		} catch (SoapFault $e) {
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
 	}
 
-	public function doReverseTransaction (array $options = array())
+	/**
+	 * @return mixed
+	 */
+	public function generateForm ()
 	{
-		$this->setOptions($options);
-		$this->_checkRequiredOptions(['merchantCode', 'orderId', 'authority']);
-		try {
-			$soapClient         = new SoapClient($this->getWSDL());
-			$c                  = new stdClass();
-			$c->pin             = $this->_config['merchantCode'];
-			$c->status          = 1;
-			$c->orderId         = $this->_config['reverseOrderId'];
-			$c->orderToReversal = $this->_config['orderId'];
+		$refId = $this->requestToken();
 
-			$res = $soapClient->PinReversal($c);
-		} catch (SoapFault $e) {
-			$this->_log($e->getMessage());
-			throw new Exception('SOAP Exception: ' . $e->getMessage());
+		return view('epayment::mellat-form', [
+			'endPoint'    => $this->getEndPoint(),
+			'refId'       => $refId,
+			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
+			'autoSubmit'  => boolval($this->auto_submit)
+		]);
+	}
+
+	/**
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function verifyTransaction ()
+	{
+		if($this->getInvoice()->checkForVerify() == false) {
+			throw new Exception('epayment::epayment.could_not_verify_payment');
 		}
 
-		if ($res->status == 0)
-			return 1;
-		else
-			return $res->status;
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'terminal_user',
+			'terminal_pass',
+			'RefId',
+			'ResCode',
+			'SaleOrderId',
+			'SaleReferenceId',
+			'CardHolderInfo'
+		]);
+
+		$sendParams = [
+			'terminalId'      => $this->terminal_id,
+			'userName'        => $this->username,
+			'userPassword'    => $this->password,
+			'orderId'         => $this->SaleOrderId, // same as SaleOrderId
+			'saleOrderId'     => $this->SaleOrderId,
+			'saleReferenceId' => $this->SaleReferenceId
+		];
+
+		$this->setInvoiceCardNumber($this->CardHolderInfo);
+
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
+			$response   = $soapClient->bpVerifyRequest($sendParams);
+
+			if (isset($response->return)) {
+				if($response->return != '0') {
+					throw new Exception($response->return);
+				} else {
+					$this->setInvoiceVerified();
+					return true;
+				}
+			} else {
+				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+			}
+
+		} catch (SoapFault $e) {
+
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
 	}
+
+	/**
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function inquiryTransaction ()
+	{
+		if($this->getInvoice()->checkForInquiry() == false) {
+			throw new Exception('epayment::epayment.could_not_inquiry_payment');
+		}
+
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'terminal_user',
+			'terminal_pass',
+			'RefId',
+			'ResCode',
+			'SaleOrderId',
+			'SaleReferenceId',
+			'CardHolderInfo'
+		]);
+
+		$sendParams = [
+			'terminalId'      => $this->terminal_id,
+			'userName'        => $this->username,
+			'userPassword'    => $this->password,
+			'orderId'         => $this->SaleOrderId, // same as SaleOrderId
+			'saleOrderId'     => $this->SaleOrderId,
+			'saleReferenceId' => $this->SaleReferenceId
+		];
+
+		$this->setInvoiceCardNumber($this->CardHolderInfo);
+
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
+			$response   = $soapClient->bpInquiryRequest($sendParams);
+
+			if (isset($response->return)) {
+				if($response->return != '0') {
+					throw new Exception($response->return);
+				} else {
+					$this->setInvoiceVerified();
+					return true;
+				}
+			} else {
+				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+			}
+
+		} catch (SoapFault $e) {
+
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
+	}
+
+	/**
+	 * Send settle request
+	 *
+	 * @return bool
+	 *
+	 * @throws Exception
+	 * @throws SoapFault
+	 */
+	public function settleTransaction()
+	{
+		if ($this->getInvoice()->checkForSettle() == false) {
+			throw new Exception('epayment::epayment.could_not_settle_payment');
+		}
+
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'terminal_user',
+			'terminal_pass',
+			'RefId',
+			'ResCode',
+			'SaleOrderId',
+			'SaleReferenceId',
+			'CardHolderInfo'
+		]);
+
+		$sendParams = [
+			'terminalId'      => $this->terminal_id,
+			'userName'        => $this->username,
+			'userPassword'    => $this->password,
+			'orderId'         => $this->SaleOrderId, // same as orderId
+			'saleOrderId'     => $this->SaleOrderId,
+			'saleReferenceId' => $this->SaleReferenceId
+		];
+
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
+			$response = $soapClient->bpSettleRequest($sendParams);
+
+			if (isset($response->return)) {
+				if($response->return == '0' || $response->return == '45') {
+					$this->setInvoiceCompleted();
+
+					return true;
+				} else {
+					throw new Exception($response->return);
+				}
+			} else {
+				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+			}
+
+		} catch (\SoapFault $e) {
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
+
+	}
+
+	/**
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function reverseTransaction ()
+	{
+		if ($this->reverseSupport == false || $this->getInvoice()->checkForReverse() == false) {
+			throw new Exception('epayment::epayment.could_not_reverse_payment');
+		}
+
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'terminal_user',
+			'terminal_pass',
+			'RefId',
+			'ResCode',
+			'SaleOrderId',
+			'SaleReferenceId',
+			'CardHolderInfo'
+		]);
+
+		$sendParams = [
+			'terminalId'      => $this->terminal_id,
+			'userName'        => $this->username,
+			'userPassword'    => $this->password,
+			'orderId'         => $this->SaleOrderId, // same as orderId
+			'saleOrderId'     => $this->SaleOrderId,
+			'saleReferenceId' => $this->SaleReferenceId
+		];
+
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
+			$response = $soapClient->__soapCall('bpReversalRequest', $sendParams);
+
+			if (isset($response->return)){
+				if ($response->return == '0' || $response->return == '45') {
+					$this->setInvoiceReversed();
+					return true;
+				} else {
+					throw new Exception($response->return);
+				}
+			} else {
+				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+			}
+
+		} catch (SoapFault $e) {
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
+	}
+
+
 }

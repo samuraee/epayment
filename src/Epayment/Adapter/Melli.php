@@ -1,7 +1,7 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
-class Melli
+class Melli extends AdapterAbstract implements AdapterInterface
 {
     protected $_END_POINT      = 'https://damoon.bankmelli-iran.com/DamoonPrePaymentController';
 

@@ -1,179 +1,237 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
-use Illuminate\Support\Facades\Log;
 use SoapClient;
+use Tartan\Epayment\Invoice\InvoiceInterface;
 
 abstract class AdapterAbstract
 {
-	protected $_END_POINT = null;
-	protected $_WSDL = null;
+	protected $endPoint     = null;
+	protected $WSDL         = null;
 
-	protected $_TEST_WSDL = null;
-	protected $_TEST_END_POINT = null;
+	protected $testWSDL     = null;
+	protected $testEndPoint = null;
 
-	protected $_config = [];
+	protected $parameters  = [];
+	protected $soapOptions = [];
 
-	public $reverseSupport = false;
+	protected $reverseSupport = false;
+	protected $validateReturnsAmount = false;
 
-	public $validateReturnsAmount = false;
+	protected $invoice;
 
-	public function __construct (array $config = [])
+	/**
+	 * AdapterAbstract constructor.
+	 *
+	 * @param InvoiceInterface $invoice
+	 * @param array $configs
+	 *
+	 * @throws Exception
+	 */
+	public function __construct (InvoiceInterface $invoice, array $configs = [])
 	{
-		$this->setOptions($config);
-		$this->init();
+		$this->invoice = $invoice;
+
+		if ($this->invoice->checkCanRequestToken() == false) {
+			throw new Exception('could not handle this invoice payment');
+		}
+
+		$this->setParameters($configs);
 	}
 
+	/**
+	 * @param string $key
+	 * @param mixed $val
+	 */
 	public function __set ($key, $val)
 	{
-		$key = strtolower($key);
-		$this->_config[$key] = $val;
+		$this->parameters[$key] = $val;
 	}
 
+	/**
+	 * @param string $key
+	 *
+	 * @return mixed|null
+	 */
 	public function __get ($key)
 	{
-		return isset($this->_config[$key]) ? $this->_config[$key] : null;
+		return isset($this->parameters[$key]) ? trim($this->parameters[$key]) : null;
 	}
 
-	public function __call ($name, array $arguments = [])
+
+	/**
+	 * @return InvoiceInterface
+	 */
+	public function getInvoice ()
 	{
-		$this->_log($name, $arguments, 'info');
-
-		call_user_func_array([$this, 'setOptions'], $arguments);
-		$exception = false;
-		$return    = null;
-
-		try {
-			$return = call_user_func_array([$this, 'do' . $name], []);
-		} catch (Exception $e) {
-			$this->_log($name, [
-				'message' => $e->getMessage(),
-				'code'    => $e->getCode(),
-				'file'    => $e->getFile() . ':' . $e->getLine()
-			],'critical');
-			$exception = true;
-		}
-		if (!$exception) {
-			if (!is_array($return)) {
-				$this->_log($name, ['response' => $return], 'info');
-			} else {
-				$this->_log($name, $return, 'info');
-			}
-		}
-
-		return $return;
+		return $this->invoice;
 	}
 
-	protected function _log ($message, $arguments = [], $logLevel = 'debug')
+	/**
+	 * @param array $parameters
+	 *
+	 * @return $this
+	 */
+	public function setParameters (array $parameters = [])
 	{
-		if (!is_array($arguments)) {
-			$arguments = (array) $arguments;
+		foreach ($parameters as $key => $value) {
+			$this->parameters[$key] = $value;
 		}
-
-		$arguments ['tag'] = str_replace('\\', '_' , get_class($this));
-
-		Log::$logLevel($message, $arguments);
+		return $this;
 	}
 
-	protected function _checkRequiredOptions (array $options)
+	/**
+	 * @return array
+	 */
+	public function getParameters ()
 	{
-		foreach ($options as $option) {
-			if (!array_key_exists($option, $this->_config)) {
-				throw new Exception(
-					"Configuration array must have a key for '$option'"
-				);
+		return $this->parameters;
+	}
+
+	/**
+	 * check for required parameters
+	 *
+	 * @param array $parameters
+	 *
+	 * @throws Exception
+	 */
+	protected function checkRequiredParameters (array $parameters)
+	{
+		foreach ($parameters as $parameter) {
+			if (!array_key_exists($parameter, $this->parameters)) {
+				throw new Exception("Parameters array must have a key for '$parameter'");
 			}
 		}
 	}
 
-	public function setOptions (array $options = [])
-	{
-		foreach ($options as $key => $value) {
-			$key                 = strtolower($key);
-			$this->_config[$key] = $value;
-		}
-	}
-
-	public function getOptions ()
-	{
-		return $this->_config;
-	}
-
+	/**
+	 * @return string
+	 */
 	public function getWSDL ()
 	{
-		if (config('epayment.mode') == 'production')
-		{
-			return $this->_WSDL;
-		}
-		else {
-			return $this->_TEST_WSDL;
+		if (config('epayment.mode') == 'production') {
+			return $this->WSDL;
+		} else {
+			return $this->testWSDL;
 		}
 	}
 
-	public function getEndPoint ($mobile = false)
+	/**
+	 * @return string
+	 */
+	public function getEndPoint ()
 	{
-		if (config('epayment.mode') == 'production')
-		{
-			return $this->_END_POINT;
-		}
-		else {
-			return $this->_TEST_END_POINT;
+		if (config('epayment.mode') == 'production') {
+			return $this->endPoint;
+		} else {
+			return $this->testEndPoint;
 		}
 	}
 
-	public static function getClientIpAddress() {
-		$ipAddress = '';
-		if (isset($_SERVER['HTTP_CLIENT_IP']))
-			$ipAddress = $_SERVER['HTTP_CLIENT_IP'];
-		else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
-			$ipAddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		else if(isset($_SERVER['HTTP_X_FORWARDED']))
-			$ipAddress = $_SERVER['HTTP_X_FORWARDED'];
-		else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
-			$ipAddress = $_SERVER['HTTP_FORWARDED_FOR'];
-		else if(isset($_SERVER['HTTP_FORWARDED']))
-			$ipAddress = $_SERVER['HTTP_FORWARDED'];
-		else if(isset($_SERVER['REMOTE_ADDR']))
-			$ipAddress = $_SERVER['REMOTE_ADDR'];
-		else
-			$ipAddress = 'UNKNOWN';
-
-		return $ipAddress;
-	}
-
+	/**
+	 * @return bool
+	 */
 	public function reverseSupport()
 	{
-		return $this->reverseSupport;
+		return (bool) $this->reverseSupport;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function validateReturnsAmount()
 	{
-		return $this->validateReturnsAmount;
+		return (bool) $this->validateReturnsAmount;
 	}
 
+	/**
+	 * @param array $options
+	 *
+	 * 'login'       => config('api.basic.username'),
+	 * 'password'    => config('api.basic.password'),
+	 * 'proxy_host' => 'localhost',
+	 * 'proxy_port' => '8080'
+	 *
+	 */
+	public function setSoapOptions(array $options = [])
+	{
+		$this->soapOptions = $options;
+	}
+
+	/**
+	 * @return SoapClient
+	 */
 	public function getSoapClient()
 	{
-		$options = [
-//			'login'       => config('api.basic.username'),
-//			'password'    => config('api.basic.password'),
-//			 'proxy_host' => 'localhost',
-//			 'proxy_port' => '8080'
-		];
-
-		return new SoapClient($this->getWSDL(), $options);
+		return new SoapClient($this->getWSDL(), $this->soapOptions);
 	}
 
-	public function init () {}
+	/**
+	 * @throws Exception
+	 */
+	public function generateForm ( ){
+		throw new Exception(__METHOD__ . ' not implemented');
+	}
 
-	abstract public function getInvoiceId ();
+	/**
+	 * @throws Exception
+	 */
+	public function verifyTransaction (){
+		throw new Exception(__METHOD__ . ' not implemented');
+	}
 
-	abstract public function getReferenceId ();
+	/**
+	 * @throws Exception
+	 */
+	public function reverseTransaction (){
+		throw new Exception(__METHOD__ . ' not implemented');
+	}
 
-	abstract public function getStatus ();
+	/**
+	 * @throws Exception
+	 */
+	public function settleTransaction (){
+		throw new Exception(__METHOD__ . ' not implemented');
+	}
 
-	abstract public function doGenerateForm (array $options = []);
+	/**
+	 * set invoice reference id
+	 * @param $referenceId
+	 */
+	protected function setInvoiceReferenceId($referenceId)
+	{
+		$this->getInvoice()->setReferenceId($referenceId); // update invoice reference id
+	}
 
-	abstract public function doVerifyTransaction (array $options = []);
+	/**
+	 * @param $cardNumber
+	 */
+	protected function setInvoiceCardNumber($cardNumber)
+	{
+		$this->getInvoice()->setCardNumber($this->CardHolderInfo);
+	}
 
-	abstract public function doReverseTransaction (array $options = []);
+	/**
+	 *  set invoice status to verified
+	 */
+	protected function setInvoiceVerified()
+	{
+		$this->getInvoice()->setVerified();
+	}
+
+	/**
+	 * set invoice status to completed
+	 */
+	protected function setInvoiceCompleted()
+	{
+		$this->getInvoice()->setCompleted();
+	}
+
+	/**
+	 * set invoice status to reversed
+	 */
+	protected function setInvoiceReversed()
+	{
+		$this->getInvoice()->setReversed();
+	}
 }

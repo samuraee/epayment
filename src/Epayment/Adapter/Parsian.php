@@ -3,154 +3,178 @@ namespace Tartan\Epayment\Adapter;
 
 use SoapClient;
 use SoapFault;
-use stdClass;
+use Tartan\Epayment\Adapter\Parsian\Exception;
 
-class Parsian extends AdapterAbstract
+class Parsian extends AdapterAbstract implements AdapterInterface
 {
-	protected $_WSDL = 'https://pec.shaparak.ir/pecpaymentgateway/eshopservice.asmx?WSDL';
-	protected $_END_POINT = 'https://pec.shaparak.ir/pecpaymentgateway';
+	protected $WSDL = 'https://pec.shaparak.ir/pecpaymentgateway/eshopservice.asmx?WSDL';
+	protected $endPoint = 'https://pec.shaparak.ir/pecpaymentgateway';
 
-	protected $_TEST_WSDL = 'http://banktest.ir/gateway/parsian/ws?wsdl';
-	protected $_TEST_END_POINT = 'http://banktest.ir/gateway/parsian/gate';
+	protected $testWSDL = 'http://banktest.ir/gateway/parsian/ws?wsdl';
+	protected $testEndPoint = 'http://banktest.ir/gateway/parsian/gate';
 
-	public $reverseSupport = true;
+	protected $reverseSupport = true;
+	protected $validateReturnsAmount = false;
 
-	public $validateReturnsAmount = false;
-
-	public function setOptions (array $options = [])
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	public function requestToken ()
 	{
-		parent::setOptions($options);
-		foreach ($this->_config as $name => $value) {
-			switch ($name) {
-				case 'in':
-					if (preg_match('/^[a-z0-9]+$/', $value))
-						$this->order_id = $value;
-					break;
-				case 'au':
-					if (preg_match('/^[a-z0-9]+$/', $value))
-						$this->authority = $value;
-					break;
-				case 'rs':
-					if ($value !== '0') {
-						throw new Exception('Invalid Request at ' . __METHOD__);
-					}
-					else {
-						$this->state = '0';
-					}
-			}
-		}
-	}
-
-	public function getInvoiceId ()
-	{
-		return $this->order_id;
-	}
-
-	public function getReferenceId ()
-	{
-		return $this->authority;
-	}
-
-	public function getStatus ()
-	{
-		return $this->state;
-	}
-
-	public function doGenerateForm (array $options = [])
-	{
-		$this->setOptions($options);
-		$this->_checkRequiredOptions(['terminal_id', 'amount', 'order_id', 'redirect_url']);
-
-		if (!$this->status) {
-			$this->status = 1;
+		if ($this->getInvoice()->checkForRequestToken() == false) {
+			throw new Exception('epayment::epayment.could_not_request_payment');
 		}
 
-		if (!$this->authority) {
-			$this->authority = 0; //default authority
-		}
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'order_id',
+			'amount',
+			'redirect_url',
+		]);
+
+		$sendParams = [
+			'pin'         => $this->terminal_id,
+			'amount'      => intval($this->amount),
+			'orderId'     => $this->order_id,
+			'callbackUrl' => $this->redirect_url,
+			'authority'   => $this->authority ? $this->authority : 0, //default authority
+			'status'      => $this->status ? $this->status : 1, //default status
+		];
 
 		try {
-			$this->_log($this->getWSDL());
-			$soapClient = $this->getSoapClient();
+			$soapClient = new SoapClient($this->getWSDL());
 
-			$sendParams = array(
-				'pin'         => $this->terminal_id,
-				'amount'      => $this->amount,
-				'orderId'     => $this->order_id,
-				'callbackUrl' => $this->redirect_url,
-				'authority'   => $this->authority,
-				'status'      => $this->status
-			);
+			$response = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
 
-			$res = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
-
+			if (isset($response->status, $response->authority)) {
+				$this->setInvoiceReferenceId($response); // update invoice reference id
+				if ($response->status == 0) {
+					return $response->authority;
+				}
+				else {
+					throw new Exception($this->status);
+				}
+			}
+			else {
+				throw new Exception('epayment::parsian.errors.invalid_response');
+			}
 		} catch (SoapFault $e) {
-			$this->_log($e->getMessage());
-			throw new Exception('SOAP Exception: ' . $e->getMessage());
-		}
-
-		$status    = $res->status;
-		$authority = $res->authority;
-
-		if (($authority) && ($status == 0))
-		{
-			$form  = sprintf('<form id="goto-bank-form" method="get" action="%s">', $this->getEndPoint());
-			$form .= sprintf('<input type="hidden" name="au" value="%s" />', $authority);
-			$label = $this->submit_label ? $this->submit_label : trans("epayment::epayment.goto_gate");
-			$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
-			$form .= '</form>';
-
-			return $form;
-		} else {
-			throw new Exception('Error: non 0 status : ' . $status);
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
 		}
 	}
 
-	public function doVerifyTransaction (array $options = array())
+	/**
+	 * @return mixed
+	 */
+	public function generateForm ()
 	{
-		$this->setOptions($options);
-		$this->_checkRequiredOptions(['terminal_id', 'authority']);
+		$authority = $this->requestToken();
+
+		return view('epayment::parsian-form', [
+			'endPoint'    => $this->getEndPoint(),
+			'refId'       => $authority,
+			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
+			'autoSubmit'  => boolval($this->auto_submit)
+		]);
+	}
+
+	/**
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function verifyTransaction ()
+	{
+		if ($this->getInvoice()->checkForVerify() == false) {
+			throw new Exception('epayment::epayment.could_not_verify_payment');
+		}
+
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'au',
+			'rs'
+		]);
+
+		if ($this->rs !== '0') {
+			throw new Exception('epayment::parsian.errors.could_not_continue_with_non0_rs');
+		}
+
+		$sendParams = [
+			'pin'       => $this->terminal_id,
+			'authority' => $this->au,
+			'status'    => 1
+		];
 
 		try {
 			$soapClient = $this->getSoapClient();
 			$sendParams = array(
 				'pin'       => $this->terminal_id,
-				'authority' => $this->authority,
+				'authority' => $this->getReferenceId(),
 				'status'    => 1
 			);
-			$res        = $soapClient->__soapCall('PinPaymentEnquiry', $sendParams);
-		} catch (SoapFault $e) {
-			$this->_log($e->getMessage());
-			throw new Exception('SOAP Exception: ' . $e->getMessage());
-		}
+			$response   = $soapClient->__soapCall('PinPaymentEnquiry', $sendParams);
 
-		if ($res->status == 0)
-			return 1;
-		else
-			return -1 * $res->status;
+			if (isset($response->status)) {
+				if ($response->status == 0) {
+					return true;
+				}
+				else {
+					throw new Exception($response->status);
+				}
+			}
+			else {
+				throw new Exception('epayment::parsian.errors.invalid_response');
+			}
+
+		} catch (SoapFault $e) {
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
 	}
 
-	public function doReverseTransaction (array $options = array())
-	{
-		$this->setOptions($options);
-		$this->_checkRequiredOptions(['terminal_id', 'order_id', 'authority']);
-		try {
-			$soapClient = $this->getSoapClient();
-			$c                  = new stdClass();
-			$c->pin             = $this->terminal_id;
-			$c->status          = 1;
-			$c->orderId         = $this->reverse_order_id;
-			$c->orderToReversal = $this->order_id;
 
-			$res = $soapClient->PinReversal($c);
-		} catch (SoapFault $e) {
-			$this->_log($e->getMessage());
-			throw new Exception('SOAP Exception: ' . $e->getMessage());
+	/**
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function reverseTransaction ()
+	{
+		if ($this->reverseSupport == false || $this->getInvoice()->checkForReverse() == false) {
+			throw new Exception('epayment::epayment.could_not_reverse_payment');
 		}
 
-		if ($res->status == 0)
-			return 1;
-		else
-			return $res->status;
+		$this->checkRequiredParameters([
+			'terminal_id',
+			'order_id',
+			'reverse_order_id',
+			'authority'
+		]);
+
+		$sendParams = [
+			'pin'             => $this->terminal_id,
+			'orderId'         => $this->reverse_order_id,
+			'orderToReversal' => $this->order_id,
+			'status'          => 1,
+		];
+
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
+			$response   = $soapClient->__soapCall('PinReversal', $sendParams);
+
+			if (isset($response->status)) {
+				if ($response->status == 0) {
+					$this->setInvoiceReversed();
+
+					return true;
+				}
+				else {
+					throw new Exception($response->status);
+				}
+			}
+			else {
+				throw new Exception('epayment::parsian.errors.invalid_response');
+			}
+		} catch (SoapFault $e) {
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
 	}
 }

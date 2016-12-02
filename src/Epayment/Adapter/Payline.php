@@ -1,7 +1,7 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
-class Payline extends AdapterAbstract
+class Payline extends AdapterAbstract implements AdapterInterface
 {
     const TOKEN   = 1;
     const CONFIRM = 2;

@@ -2,7 +2,7 @@
 namespace Tartan\Epayment\Adapter;
 
 
-class Saderat extends AdapterAbstract
+class Saderat extends AdapterAbstract implements AdapterInterface
 {
     protected $_END_POINT      = 'https://damoon.bsi.ir/DamoonPrePaymentController';
 

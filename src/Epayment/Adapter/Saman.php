@@ -3,24 +3,26 @@ namespace Tartan\Epayment\Adapter;
 
 use SoapClient;
 use SoapFault;
+use Tartan\Epayment\Adapter\Parsian\Exception;
 
 class Saman extends AdapterAbstract
 {
+//	protected $WSDL         = 'https://sep.shaparak.ir/ref-payment/ws/ReferencePayment?WSDL';
+//	protected $endPoint     = 'https://sep.shaparak.ir/CardServices/controller';
+	protected $WSDL         = 'https://sep.shaparak.ir/Payments/InitPayment.asmx?WSDL';
+	protected $endPoint     = 'https://sep.shaparak.ir/Payment.aspx';
 
-	protected $_WSDL             = 'https://sep.shaparak.ir/ref-payment/ws/ReferencePayment?WSDL';
-	protected $_END_POINT        = 'https://sep.shaparak.ir/CardServices/controller';
+	protected $testWSDL     = 'http://banktest.ir/gateway/saman/ws?wsdl';
+	protected $testEndPoint = 'http://banktest.ir/gateway/saman/gate';
 
-    protected $_TEST_WSDL        = 'http://banktest.ir/gateway/saman/ws?wsdl';
-    protected $_TEST_END_POINT   = 'http://banktest.ir/gateway/saman/gate';
+	protected $reverseSupport = true;
+	protected $validateReturnsAmount = true;
 
-    public $reverseSupport = true;
-
-    public $validateReturnsAmount = true;
-
-	public function setOptions(array $options = array())
+	public function setParameters(array $options = array())
 	{
-		parent::setOptions($options);
-		foreach ($this->_config as $name => $value) {
+		parent::setParameters($options);
+
+		foreach ($this->getParameters() as $name => $value) {
 			switch ($name) {
 				case 'resnum':
 						$this->order_id = $value;
@@ -32,140 +34,146 @@ class Saman extends AdapterAbstract
 		}
 	}
 
-    public function getInvoiceId()
-    {
-        return $this->order_id;
-    }
-
-    public function getReferenceId()
-    {
-        return $this->ref_id;
-    }
-
-    public function getStatus()
-    {
-        return $this->state;
-    }
-
-    public function doGenerateForm(array $options = array())
-    {
-	    if ($this->with_token) {
-		    return $this->doGenerateFormWithToken($options);
-	    } else {
-		    return $this->doGenerateFormWithoutToken($options); // default
-	    }
-    }
-    public function doGenerateFormWithoutToken(array $options = array())
-    {
-        $this->setOptions($options);
-        $this->_checkRequiredOptions(['amount', 'terminal_id', 'order_id', 'redirect_url']);
-
-        $action = $this->getEndPoint();
-
-        $form  = sprintf('<form id="goto-gate-form" method="post" action="%s">', $action );
-        $form .= sprintf('<input type="hidden" name="Amount" value="%d">', $this->amount);
-        $form .= sprintf('<input type="hidden" name="MID" value="%s">', $this->terminal_id);
-        $form .= sprintf('<input type="hidden" name="ResNum" value="%s">', $this->order_id);
-        $form .= sprintf('<input type="hidden" name="RedirectURL" value="%s">', $this->redirect_url);
-
-        if (isset($this->logo_uri)) {
-            $form .= sprintf('<input name="LogoURI" value="%s">', $this->logo_uri);
-        }
-
-        $label = $this->submit_label ? $this->submit_label : trans("epayment::epayment.goto_gate");
-
-        $form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
-
-        $form .= '</form>';
-
-        return $form;
-    }
-
-	public function doGenerateFormWithToken(array $options = array())
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	public function requestToken ()
 	{
-		$this->setOptions($options);
-		$this->_checkRequiredOptions(['amount', 'terminal_id', 'order_id', 'redirect_url']);
+		if ($this->getInvoice()->checkForRequestToken() == false) {
+			throw new Exception('epayment::epayment.could_not_request_payment');
+		}
 
-		$action = $this->getEndPoint();
+		$this->checkRequiredParameters([
+			'merchant_id',
+			'order_id',
+			'amount',
+			'redirect_url',
+		]);
+
+		$sendParams = [
+			'TermID'      => $this->merchant_id,
+			'TotalAmount' => intval($this->amount),
+			'ResNum'      => $this->order_id,
+		];
 
 		try {
-			$this->_log($this->getWSDL());
 			$soapClient = new SoapClient($this->getWSDL());
 
-			$sendParams = array(
-				'pin'         => $this->terminal_id,
-				'amount'      => $this->amount,
-				'orderId'     => $this->order_id
-			);
+			$response = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
 
-			$res = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
-
+			if (isset($response->status, $response->authority)) {
+				$this->setInvoiceReferenceId($response); // update invoice reference id
+				if ($response->status == 0) {
+					return $response->authority;
+				}
+				else {
+					throw new Exception($this->status);
+				}
+			}
+			else {
+				throw new Exception('epayment::parsian.errors.invalid_response');
+			}
 		} catch (SoapFault $e) {
-			$this->log($e->getMessage());
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
+	}
+
+	public function generateForm()
+	{
+		if ($this->with_token) {
+			return $this->generateFormWithToken();
+		} else {
+			return $this->generateFormWithoutToken(); // default
+		}
+	}
+	public function generateFormWithoutToken()
+	{
+		$this->checkRequiredParameters([
+			'merchant_id',
+			'amount',
+			'order_id',
+			'redirect_url'
+		]);
+
+		return view('epayment::saman-redirector', [
+			'endPoint'    => $this->getEndPoint(),
+			'amount'      => intval($this->amount),
+			'merchantId'  => $this->merchant_id,
+			'orderId'     => $this->order_id,
+			'redirectUrl' => $this->redirect_url,
+			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
+			'autoSubmit'  => boolval($this->auto_submit),
+		]);
+	}
+
+	public function generateFormWithToken(array $options = array())
+	{
+		$this->checkRequiredParameters([
+			'merchant_id',
+			'order_id',
+			'amount',
+			'redirect_url',
+		]);
+
+		$token = $this->requestToken();
+
+		return view('epayment::saman-redirector', [
+			'endPoint'    => $this->getEndPoint(),
+			'token'       => $token,
+			'redirectUrl' => $this->redirect_url,
+			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
+			'autoSubmit'  => boolval($this->auto_submit),
+		]);
+	}
+
+	public function verifyTransaction()
+	{
+		$this->checkRequiredParameters([
+			'State',
+			'RefNum',
+			'ResNum',
+			'MID',
+			'TraceNo',
+		]);
+
+		if ($this->State != 'OK') {
+			throw new Exception('Error: ' . $this->getStatus());
+		}
+
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
+
+			$res = $soapClient->VerifyTransaction(
+				$this->getReferenceId(), $this->merchant_id
+			);
+		} catch (SoapFault $e) {
+			$this->_log($e->getMessage());
 			throw new Exception('SOAP Exception: ' . $e->getMessage());
 		}
 
-		$form  = sprintf('<form id="goto-bank-form" method="post" action="%s" class="form-horizontal">', $action );
-		$form .= sprintf('<input name="Amount" value="%d">', $this->amount);
-		$form .= sprintf('<input name="MID" value="%s">', $this->terminal_id);
-		$form .= sprintf('<input name="ResNum" value="%s">', $this->order_id);
-		$form .= sprintf('<input name="RedirectURL" value="%s">', $this->redirect_url);
-
-		if (isset($this->logo_uri)) {
-			$form .= sprintf('<input name="LogoURI" value="%s">', $this->logo_uri);
-		}
-
-		$label = $this->submit_label ? $this->submit_label : trans("epayment::epayment.goto_gate");
-
-		$form .= sprintf('<div class="control-group"><div class="controls"><input type="submit" class="btn btn-success" value="%s"></div></div>', $label);
-
-		$form .= '</form>';
-
-		return $form;
+		return (int) $res;
 	}
 
-    public function doVerifyTransaction(array $options = array())
-    {
-        $this->setOptions($options);
-        $this->_checkRequiredOptions(['ref_id', 'terminal_id', 'state']);
+	public function doReverseTransaction(array $options = array())
+	{
+		$this->setParameters($options);
+		$this->_checkRequiredOptions(['ref_id', 'merchant_id', 'password', 'amount']);
 
-        if ($this->ref_id == '') {
-	        throw new Exception('Error: ' . $this->state);
-        }
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
 
-        try {
-            $soapClient = new SoapClient($this->getWSDL());
+			$res = $soapClient->reverseTransaction(
+				$this->getReferenceId(),
+				$this->merchant_id,
+				$this->password,
+				$this->amount
+			);
+		} catch (SoapFault $e) {
+			$this->_log($e->getMessage());
+			throw new Exception('SOAP Exception: ' . $e->getMessage());
+		}
 
-            $res = $soapClient->VerifyTransaction(
-                $this->ref_id, $this->terminal_id
-            );
-        } catch (SoapFault $e) {
-            $this->_log($e->getMessage());
-            throw new Exception('SOAP Exception: ' . $e->getMessage());
-        }
-
-        return (int) $res;
-    }
-
-    public function doReverseTransaction(array $options = array())
-    {
-        $this->setOptions($options);
-        $this->_checkRequiredOptions(['ref_id', 'terminal_id', 'password', 'amount']);
-
-        try {
-            $soapClient = new SoapClient($this->getWSDL());
-
-            $res = $soapClient->reverseTransaction(
-                $this->ref_id,
-                $this->terminal_id,
-                $this->password,
-                $this->amount
-            );
-        } catch (SoapFault $e) {
-            $this->_log($e->getMessage());
-            throw new Exception('SOAP Exception: ' . $e->getMessage());
-        }
-
-        return (int) $res;
-    }
+		return (int) $res;
+	}
 }

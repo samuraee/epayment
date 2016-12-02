@@ -2,94 +2,60 @@
 namespace Tartan\Epayment;
 
 use Tartan\Epayment\Adapter\AdapterInterface;
-use Tartan\Epayment\Adapter\AdapterAbstract;
+use Tartan\Epayment\Invoice\InvoiceInterface;
 
 class Factory
 {
-    var $gateway;
-    var $options;
-
-    public function __construct(AdapterInterface $gateway, $options = array()
-    ) {
-        $this->gateway = $gateway;
-        $this->options = $options;
-    }
-
 	/**
-	 * @return string
+	 * @var AdapterInterface
 	 */
-    public function generateForm() {
-        return $this->gateway->generateForm($this->options);
-    }
-
-	/**
-	 * @return string
-	 */
-    public function verifyTransaction() {
-        return $this->gateway->verifyTransaction($this->options);
-    }
-
-	/**
-	 * @return string
-	 */
-    public function reverseTransaction() {
-        return $this->gateway->reverseTransaction($this->options);
-    }
-
+	protected $gateway;
 	/**
 	 * @param $adapter
-	 * @param array $options
-	 * @param array $banks
+	 * @param InvoiceInterface $invoice
 	 *
-	 * @return \Tartan\Epayment\Adapter\AdapterAbstract
+	 * @return $this
 	 * @throws \Tartan\Epayment\Exception
 	 */
-    public static function make($adapter, array $options = [], array $banks = [])
+    public function make($adapter, InvoiceInterface $invoice)
     {
-        if (!is_array($options)) {
-            throw new Exception(
-                'Bank parameters must be in an array'
-            );
-        }
+	    $adapter = ucfirst(strtolower($adapter));
 
-        if (!is_array($banks)) {
-            throw new Exception(
-                'Available banks must be in an array'
-            );
-        }
+	    /**
+	     *  check for supported gateways
+	     */
+	    $readyToServerGateways = explode(',', config('epayment.gateways'));
 
-        if (!is_string($adapter) || empty($adapter)) {
-            throw new Exception(
-                'Bank name must be specified in a string'
-            );
-        }
-
-        if (count($banks) > 0 && !in_array($adapter, $banks)) {
-            throw new Exception(
-                ucfirst($adapter) .
-                    " bank adapter might exist, but is not listed among available banks"
-            );
-        }
+	    if (!in_array($adapter, $readyToServerGateways)) {
+		    throw new Exception(trans('epayment::epayment.gate_not_ready'));
+	    }
 
         $adapterNamespace = 'Tartan\Epayment\Adapter\\';
-        $adapterName  = $adapterNamespace . ucfirst(strtolower($adapter));
+        $adapterName  = $adapterNamespace . $adapter;
 
         if (!class_exists($adapterName)) {
-            throw new Exception(
-                "Adapter class '$adapterName' does not exist"
-            );
+            throw new Exception("Adapter class '$adapterName' does not exist");
         }
 
-        $bankAdapter = new $adapterName($options);
+        $bankAdapter = new $adapterName($invoice, config('epayment.'.strtolower($adapter)));
 
-        if (!$bankAdapter instanceof AdapterAbstract) {
-            throw new Exception(
-                "Adapter class '$adapterName' does not extend \\Tartan\\Epayment\\Adapter\\AdapterAbstract"
-            );
+        if (!$bankAdapter instanceof AdapterInterface) {
+            throw new Exception(trans('epayment::epayment.gate_not_ready'));
         }
 
-        $bankAdapter->bank = $adapter;
+        $this->gateway = $bankAdapter;
 
-        return $bankAdapter;
+	    return $this;
     }
+
+	public function __call ($name, $arguments)
+	{
+		if (empty($this->gateway)) {
+			throw new Exception("Gateway not defined before! please use make method to initialize gateway");
+		}
+
+		$this->gateway->setParameters($arguments); // set parameters
+
+		return $this->gateway->$name(); // call desire method
+	}
 }
