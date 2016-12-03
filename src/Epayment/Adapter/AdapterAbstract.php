@@ -32,7 +32,7 @@ abstract class AdapterAbstract
 	{
 		$this->invoice = $invoice;
 
-		if ($this->invoice->checkCanRequestToken() == false) {
+		if ($this->invoice->checkForRequestToken() == false) {
 			throw new Exception('could not handle this invoice payment');
 		}
 
