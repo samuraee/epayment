@@ -56,6 +56,6 @@ class Factory
 
 		$this->gateway->setParameters($arguments); // set parameters
 
-		return $this->gateway->$name(); // call desire method
+		return call_user_func_array([$this->gateway, $name], $arguments); // call desire method
 	}
 }
