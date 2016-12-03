@@ -3,7 +3,7 @@ namespace Tartan\Epayment\Adapter;
 
 interface AdapterInterface
 {
-	public function setParameters($parameters);
+	public function setParameters(array $parameters = []);
 
     public function generateForm();
 
