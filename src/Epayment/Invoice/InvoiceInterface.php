@@ -24,4 +24,6 @@ interface InvoiceInterface
 	public function setReversed();
 
 	public function getAmount();
+
+	public function setPaidAt($time = 'now');
 }
