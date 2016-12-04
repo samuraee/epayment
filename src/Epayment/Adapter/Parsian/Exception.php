@@ -16,7 +16,7 @@ class Exception extends \Tartan\Epayment\Adapter\Exception
 				break;
 			}
 
-			case preg_match('/^epayment::/', $message) : {
+			case preg_match('/^epayment::/', $message) == 1 : {
 				$code = static::UNHANDLED_ERR;
 				$message = trans(strval($message)); // fetch message from translation file
 				break;
