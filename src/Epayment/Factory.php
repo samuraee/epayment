@@ -54,6 +54,10 @@ class Factory
 			throw new Exception("Gateway not defined before! please use make method to initialize gateway");
 		}
 
+		// چو ن همیشه متد ها با یک پارامتر کلی بصورت آرایه فراخوانی میشوند. مثلا:
+		// $paymentGatewayHandler->generateForm($ArrayOfExtraPaymentParams)
+		$arguments = $arguments[0];
+
 		$this->gateway->setParameters($arguments); // set parameters
 
 		return call_user_func_array([$this->gateway, $name], $arguments); // call desire method
