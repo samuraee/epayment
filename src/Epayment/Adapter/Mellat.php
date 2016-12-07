@@ -20,7 +20,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 	 * @return array
 	 * @throws Exception
 	 */
-	public function requestToken()
+	protected function requestToken()
 	{
 		if($this->getInvoice()->checkForRequestToken() == false) {
 			throw new Exception('epayment::epayment.could_not_request_payment');
@@ -74,7 +74,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 	/**
 	 * @return mixed
 	 */
-	public function generateForm ()
+	protected function generateForm ()
 	{
 		$refId = $this->requestToken();
 
@@ -90,7 +90,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function verifyTransaction ()
+	protected function verifyTransaction ()
 	{
 		if($this->getInvoice()->checkForVerify() == false) {
 			throw new Exception('epayment::epayment.could_not_verify_payment');
@@ -200,7 +200,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 	 * @throws Exception
 	 * @throws SoapFault
 	 */
-	public function settleTransaction()
+	protected function settleTransaction()
 	{
 		if ($this->getInvoice()->checkForSettle() == false) {
 			throw new Exception('epayment::epayment.could_not_settle_payment');
@@ -252,7 +252,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function reverseTransaction ()
+	protected function reverseTransaction ()
 	{
 		if ($this->reverseSupport == false || $this->getInvoice()->checkForReverse() == false) {
 			throw new Exception('epayment::epayment.could_not_reverse_payment');
@@ -298,5 +298,21 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		}
 	}
 
+	public function getGatewayReferenceId()
+	{
+		$this->checkRequiredParameters([
+			'SaleReferenceId',
+		]);
+		return $this->SaleReferenceId;
+	}
 
+	public function verify()
+	{
+		$v = $this->verifyTransaction();
+		if ($v) {
+			return $this->settleTransaction();
+		} else {
+			return $v;
+		}
+	}
 }

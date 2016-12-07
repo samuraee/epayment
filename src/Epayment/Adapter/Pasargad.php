@@ -20,7 +20,7 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 	protected $testRefundUrl = 'http://banktest.ir/gateway/pasargad/refund';
 
 
-	public function generateForm()
+	protected function generateForm()
 	{
 		$this->checkRequiredParameters([
 			'amount',
@@ -64,7 +64,7 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 //
 //	}
 
-	public function verifyTransaction()
+	protected function verifyTransaction()
 	{
 		$this->checkRequiredParameters([
 			'iN',
@@ -116,7 +116,7 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 		}
 	}
 
-	public function reverseTransaction()
+	protected function reverseTransaction()
 	{
 		$this->checkRequiredParameters([
 			'iN',

@@ -5,11 +5,11 @@ interface AdapterInterface
 {
 	public function setParameters(array $parameters = []);
 
-    public function generateForm();
+    public function form();
 
-    public function verifyTransaction();
+    public function verify();
 
-    public function reverseTransaction();
+    public function reverse();
 
-	public function settleTransaction();
+    public function getGatewayReferenceId();
 }

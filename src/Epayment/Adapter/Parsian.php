@@ -13,14 +13,11 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	protected $testWSDL = 'http://banktest.ir/gateway/parsian/ws?wsdl';
 	protected $testEndPoint = 'http://banktest.ir/gateway/parsian/gate';
 
-	protected $reverseSupport = true;
-	protected $validateReturnsAmount = false;
-
 	/**
 	 * @return array
 	 * @throws Exception
 	 */
-	public function requestToken ()
+	protected function requestToken ()
 	{
 		if ($this->getInvoice()->checkForRequestToken() == false) {
 			throw new Exception('epayment::epayment.could_not_request_payment');
@@ -67,7 +64,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	/**
 	 * @return mixed
 	 */
-	public function generateForm ()
+	protected function generateForm ()
 	{
 		$authority = $this->requestToken();
 
@@ -83,7 +80,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function verifyTransaction ()
+	protected function verifyTransaction ()
 	{
 		if ($this->getInvoice()->checkForVerify() == false) {
 			throw new Exception('epayment::epayment.could_not_verify_payment');
@@ -136,7 +133,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function reverseTransaction ()
+	protected function reverseTransaction ()
 	{
 		if ($this->reverseSupport == false || $this->getInvoice()->checkForReverse() == false) {
 			throw new Exception('epayment::epayment.could_not_reverse_payment');
@@ -176,5 +173,13 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		} catch (SoapFault $e) {
 			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
 		}
+	}
+
+	public function getGatewayReferenceId()
+	{
+		$this->checkRequiredParameters([
+			'au',
+		]);
+		return $this->au;
 	}
 }

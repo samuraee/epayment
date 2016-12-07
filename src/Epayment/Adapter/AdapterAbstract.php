@@ -6,18 +6,24 @@ use Tartan\Epayment\Invoice\InvoiceInterface;
 
 abstract class AdapterAbstract
 {
-	protected $endPoint     = null;
-	protected $WSDL         = null;
+	protected $endPoint;
+	protected $WSDL;
 
-	protected $testWSDL     = null;
-	protected $testEndPoint = null;
+	protected $testWSDL;
+	protected $testEndPoint;
 
+	/**
+	 * @var array
+	 */
 	protected $parameters  = [];
+	/**
+	 * @var array
+	 */
 	protected $soapOptions = [];
 
-	protected $reverseSupport = false;
-	protected $validateReturnsAmount = false;
-
+	/**
+	 * @var InvoiceInterface
+	 */
 	protected $invoice;
 
 	/**
@@ -88,6 +94,21 @@ abstract class AdapterAbstract
 		return $this->parameters;
 	}
 
+	public function form()
+	{
+		return $this->generateForm();
+	}
+
+	public function verify()
+	{
+		return $this->verifyTransaction();
+	}
+
+	public function reverse()
+	{
+		return $this->reverseTransaction();
+	}
+
 	/**
 	 * check for required parameters
 	 *
@@ -107,7 +128,7 @@ abstract class AdapterAbstract
 	/**
 	 * @return string
 	 */
-	public function getWSDL ()
+	protected function getWSDL ()
 	{
 		if (config('epayment.mode') == 'production') {
 			return $this->WSDL;
@@ -119,29 +140,13 @@ abstract class AdapterAbstract
 	/**
 	 * @return string
 	 */
-	public function getEndPoint ()
+	protected function getEndPoint ()
 	{
 		if (config('epayment.mode') == 'production') {
 			return $this->endPoint;
 		} else {
 			return $this->testEndPoint;
 		}
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function reverseSupport()
-	{
-		return (bool) $this->reverseSupport;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function validateReturnsAmount()
-	{
-		return (bool) $this->validateReturnsAmount;
 	}
 
 	/**
@@ -153,7 +158,7 @@ abstract class AdapterAbstract
 	 * 'proxy_port' => '8080'
 	 *
 	 */
-	public function setSoapOptions(array $options = [])
+	protected function setSoapOptions(array $options = [])
 	{
 		$this->soapOptions = $options;
 	}
@@ -161,37 +166,9 @@ abstract class AdapterAbstract
 	/**
 	 * @return SoapClient
 	 */
-	public function getSoapClient()
+	protected function getSoapClient()
 	{
 		return new SoapClient($this->getWSDL(), $this->soapOptions);
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	public function generateForm ( ){
-		throw new Exception(__METHOD__ . ' not implemented');
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	public function verifyTransaction (){
-		throw new Exception(__METHOD__ . ' not implemented');
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	public function reverseTransaction (){
-		throw new Exception(__METHOD__ . ' not implemented');
-	}
-
-	/**
-	 * @throws Exception
-	 */
-	public function settleTransaction (){
-		throw new Exception(__METHOD__ . ' not implemented');
 	}
 
 	/**
@@ -233,5 +210,14 @@ abstract class AdapterAbstract
 	protected function setInvoiceReversed()
 	{
 		$this->getInvoice()->setReversed();
+	}
+
+	/**
+	 * @return mixed
+	 * @throws Exception
+	 */
+	public function getGatewayReferenceId()
+	{
+		throw new Exception(__METHOD__ . ' not implemented');
 	}
 }

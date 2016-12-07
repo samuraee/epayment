@@ -38,7 +38,7 @@ class Saman extends AdapterAbstract
 	 * @return array
 	 * @throws Exception
 	 */
-	public function requestToken ()
+	protected function requestToken ()
 	{
 		if ($this->getInvoice()->checkForRequestToken() == false) {
 			throw new Exception('epayment::epayment.could_not_request_payment');
@@ -79,7 +79,7 @@ class Saman extends AdapterAbstract
 		}
 	}
 
-	public function generateForm()
+	protected function generateForm()
 	{
 		if ($this->with_token) {
 			return $this->generateFormWithToken();
@@ -87,7 +87,7 @@ class Saman extends AdapterAbstract
 			return $this->generateFormWithoutToken(); // default
 		}
 	}
-	public function generateFormWithoutToken()
+	protected function generateFormWithoutToken()
 	{
 		$this->checkRequiredParameters([
 			'merchant_id',
@@ -107,7 +107,7 @@ class Saman extends AdapterAbstract
 		]);
 	}
 
-	public function generateFormWithToken(array $options = array())
+	protected function generateFormWithToken(array $options = array())
 	{
 		$this->checkRequiredParameters([
 			'merchant_id',
@@ -127,7 +127,7 @@ class Saman extends AdapterAbstract
 		]);
 	}
 
-	public function verifyTransaction()
+	protected function verifyTransaction()
 	{
 		$this->checkRequiredParameters([
 			'State',
@@ -145,7 +145,7 @@ class Saman extends AdapterAbstract
 			$soapClient = new SoapClient($this->getWSDL());
 
 			$res = $soapClient->VerifyTransaction(
-				$this->getReferenceId(), $this->merchant_id
+				$this->RefNum, $this->merchant_id
 			);
 		} catch (SoapFault $e) {
 			$this->_log($e->getMessage());
@@ -155,16 +155,21 @@ class Saman extends AdapterAbstract
 		return (int) $res;
 	}
 
-	public function doReverseTransaction(array $options = array())
+	protected function reverseTransaction(array $options = array())
 	{
 		$this->setParameters($options);
-		$this->_checkRequiredOptions(['ref_id', 'merchant_id', 'password', 'amount']);
+		$this->_checkRequiredOptions([
+			'ref_id',
+			'merchant_id',
+			'password',
+			'amount'
+		]);
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 
 			$res = $soapClient->reverseTransaction(
-				$this->getReferenceId(),
+				$this->ref_id,
 				$this->merchant_id,
 				$this->password,
 				$this->amount
@@ -175,5 +180,14 @@ class Saman extends AdapterAbstract
 		}
 
 		return (int) $res;
+	}
+
+
+	public function getGatewayReferenceId()
+	{
+		$this->checkRequiredParameters([
+			'RefNum',
+		]);
+		return $this->RefNum;
 	}
 }
