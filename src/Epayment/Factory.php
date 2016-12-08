@@ -3,6 +3,7 @@ namespace Tartan\Epayment;
 
 use Tartan\Epayment\Adapter\AdapterInterface;
 use Tartan\Epayment\Invoice\InvoiceInterface;
+use Illuminate\Support\Facades\Log;
 
 class Factory
 {
@@ -54,10 +55,17 @@ class Factory
 			throw new Exception("Gateway not defined before! please use make method to initialize gateway");
 		}
 
+		Log::info($name, $arguments);
+
 		// چو ن همیشه متد ها با یک پارامتر کلی بصورت آرایه فراخوانی میشوند. مثلا:
 		// $paymentGatewayHandler->generateForm($ArrayOfExtraPaymentParams)
 		$this->gateway->setParameters($arguments[0]); // set parameters
 
-		return call_user_func_array([$this->gateway, $name], $arguments); // call desire method
+		try {
+			return call_user_func_array([$this->gateway, $name], $arguments); // call desire method
+		} catch (\Exception $e) {
+			Log::error($e->getMessage() .' #'.$e->getCode(). ' File:'.$e->getFile().'['.$e->getLine().']');
+			throw $e;
+		}
 	}
 }

@@ -52,6 +52,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 			$response = $soapClient->__soapCall('bpPayRequest', $sendParams);
 
+			Log::info('bpPayRequest response', $response);
+
 			if (isset($response->return)) {
 				$response = explode(',', $response->return);
 
@@ -121,6 +123,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 			$response   = $soapClient->__soapCall('bpVerifyRequest', $sendParams);
 
+			Log::info('bpVerifyRequest response', $response);
+
 			if (isset($response->return)) {
 				if($response->return != '0') {
 					throw new Exception($response->return);
@@ -168,17 +172,19 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			'saleReferenceId' => $this->SaleReferenceId
 		];
 
-		$this->setInvoiceCardNumber($this->CardHolderInfo);
+		$this->getInvoice()->setCardNumber($this->CardHolderInfo);
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
-			$response   = $soapClient->bpInquiryRequest($sendParams);
+			$response   = $soapClient->__soapCall('bpInquiryRequest', $sendParams);
+
+			Log::info('bpInquiryRequest response', $response);
 
 			if (isset($response->return)) {
 				if($response->return != '0') {
 					throw new Exception($response->return);
 				} else {
-					$this->setInvoiceVerified();
+					$this->getInvoice()->setVerified();
 					return true;
 				}
 			} else {
@@ -228,6 +234,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 			$response = $soapClient->__soapCall('bpSettleRequest', $sendParams);
+
+			Log::info('bpSettleRequest response', $response);
 
 			if (isset($response->return)) {
 				if($response->return == '0' || $response->return == '45') {
@@ -279,6 +287,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 			$response = $soapClient->__soapCall('bpReversalRequest', $sendParams);
+
+			Log::info('bpReversalRequest response', $response);
 
 			if (isset($response->return)){
 				if ($response->return == '0' || $response->return == '45') {
