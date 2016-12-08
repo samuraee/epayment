@@ -13,13 +13,15 @@ interface InvoiceInterface
 
 	public function checkForReverse();
 
-	public function checkForSettle();
+	public function checkForAfterVerify();
 
 	public function setCardNumber($cardNumber);
 
 	public function setVerified();
 
-	public function setCompleted();
+	public function setAfterVerified();
+
+	public function setSuccessful();
 
 	public function setReversed();
 

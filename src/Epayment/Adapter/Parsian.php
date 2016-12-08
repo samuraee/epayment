@@ -13,6 +13,8 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	protected $testWSDL = 'http://banktest.ir/gateway/parsian/ws?wsdl';
 	protected $testEndPoint = 'http://banktest.ir/gateway/parsian/gate';
 
+	protected $reverseSupport = true;
+
 	/**
 	 * @return array
 	 * @throws Exception

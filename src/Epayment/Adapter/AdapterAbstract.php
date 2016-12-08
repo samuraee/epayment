@@ -27,6 +27,12 @@ abstract class AdapterAbstract
 	protected $invoice;
 
 	/**
+	 * specifies if gateway supports transaction reverse or not
+	 * @var bool
+	 */
+	protected $reverseSupport = false;
+
+	/**
 	 * AdapterAbstract constructor.
 	 *
 	 * @param InvoiceInterface $invoice
@@ -94,16 +100,33 @@ abstract class AdapterAbstract
 		return $this->parameters;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function form()
 	{
 		return $this->generateForm();
 	}
 
+	/**
+	 * @return true
+	 */
 	public function verify()
 	{
 		return $this->verifyTransaction();
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function afterVerify()
+	{
+		return true;
+	}
+
+	/**
+	 * @return bool
+	 */
 	public function reverse()
 	{
 		return $this->reverseTransaction();
@@ -172,52 +195,19 @@ abstract class AdapterAbstract
 	}
 
 	/**
-	 * set invoice reference id
-	 * @param $referenceId
-	 */
-	protected function setInvoiceReferenceId($referenceId)
-	{
-		$this->getInvoice()->setReferenceId($referenceId); // update invoice reference id
-	}
-
-	/**
-	 * @param $cardNumber
-	 */
-	protected function setInvoiceCardNumber($cardNumber)
-	{
-		$this->getInvoice()->setCardNumber($this->CardHolderInfo);
-	}
-
-	/**
-	 *  set invoice status to verified
-	 */
-	protected function setInvoiceVerified()
-	{
-		$this->getInvoice()->setVerified();
-	}
-
-	/**
-	 * set invoice status to completed
-	 */
-	protected function setInvoiceCompleted()
-	{
-		$this->getInvoice()->setCompleted();
-	}
-
-	/**
-	 * set invoice status to reversed
-	 */
-	protected function setInvoiceReversed()
-	{
-		$this->getInvoice()->setReversed();
-	}
-
-	/**
 	 * @return mixed
 	 * @throws Exception
 	 */
 	public function getGatewayReferenceId()
 	{
 		throw new Exception(__METHOD__ . ' not implemented');
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function reverseSupport()
+	{
+		return $this->reverseSupport;
 	}
 }
