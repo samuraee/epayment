@@ -121,6 +121,7 @@ abstract class AdapterAbstract
 	 */
 	public function afterVerify()
 	{
+		$this->getInvoice()->setAfterVerified(); // عملیات پیش فرض در صورت عدم نیاز
 		return true;
 	}
 
