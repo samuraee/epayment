@@ -50,7 +50,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 
-			$response = $soapClient->bpPayRequest($sendParams);
+			$response = $soapClient->__soapCall('bpPayRequest', $sendParams);
 
 			if (isset($response->return)) {
 				$response = explode(',', $response->return);
@@ -119,7 +119,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
-			$response   = $soapClient->bpVerifyRequest($sendParams);
+			$response   = $soapClient->__soapCall('bpVerifyRequest', $sendParams);
 
 			if (isset($response->return)) {
 				if($response->return != '0') {
@@ -227,7 +227,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
-			$response = $soapClient->bpSettleRequest($sendParams);
+			$response = $soapClient->__soapCall('bpSettleRequest', $sendParams);
 
 			if (isset($response->return)) {
 				if($response->return == '0' || $response->return == '45') {
