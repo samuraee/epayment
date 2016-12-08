@@ -21,7 +21,7 @@ interface InvoiceInterface
 
 	public function setAfterVerified();
 
-	public function setSuccessful();
+	public function setSuccessful($flag);
 
 	public function setReversed();
 
