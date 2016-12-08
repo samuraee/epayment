@@ -97,8 +97,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		$this->checkRequiredParameters([
 			'terminal_id',
-			'terminal_user',
-			'terminal_pass',
+			'username',
+			'password',
 			'RefId',
 			'ResCode',
 			'SaleOrderId',
@@ -207,8 +207,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		$this->checkRequiredParameters([
 			'terminal_id',
-			'terminal_user',
-			'terminal_pass',
+			'username',
+			'password',
 			'RefId',
 			'ResCode',
 			'SaleOrderId',
@@ -258,8 +258,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		$this->checkRequiredParameters([
 			'terminal_id',
-			'terminal_user',
-			'terminal_pass',
+			'username',
+			'password',
 			'RefId',
 			'ResCode',
 			'SaleOrderId',
