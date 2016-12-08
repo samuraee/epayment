@@ -4,6 +4,7 @@ namespace Tartan\Epayment\Adapter;
 use SoapClient;
 use SoapFault;
 use Tartan\Epayment\Adapter\Mellat\Exception;
+use Illuminate\Support\Facades\Log;
 
 class Mellat extends AdapterAbstract implements AdapterInterface
 {
