@@ -64,7 +64,7 @@ class Factory
 		try {
 			return call_user_func_array([$this->gateway, $name], $arguments); // call desire method
 		} catch (\Exception $e) {
-			Log::error($e->getMessage() .' #'.$e->getCode(). ' File:'.$e->getFile().'['.$e->getLine().']');
+			Log::error($e->getMessage() .' #'.$e->getCode(). ' File:'.$e->getFile().':'.$e->getLine());
 			throw $e;
 		}
 	}

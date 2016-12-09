@@ -290,7 +290,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 			$response = $soapClient->__soapCall('bpReversalRequest', $sendParams);
 
-			Log::info('bpReversalRequest response', $response);
+			Log::info('bpReversalRequest response', ['return' => $response->return]);
 
 			if (isset($response->return)){
 				if ($response->return == '0' || $response->return == '45') {
