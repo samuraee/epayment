@@ -36,7 +36,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		]);
 
 		$sendParams = [
-			'terminalId'     => $this->terminal_id,info
+			'terminalId'     => $this->terminal_id,
 			'userName'       => $this->username,
 			'userPassword'   => $this->password,
 			'orderId'        => $this->order_id,
