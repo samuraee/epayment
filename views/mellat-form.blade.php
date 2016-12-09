@@ -1,4 +1,4 @@
-<form id="goto_mellat_bank" class="form-horizontal goto-bank-form" method="get" action="{!! $endPoint !!}">
+<form id="goto_mellat_bank" class="form-horizontal goto-bank-form" method="POST" action="{!! $endPoint !!}">
     <input type="hidden" name="RefId" value="{{$refId}}" />
     <div class="control-group">
         <div class="controls">
