@@ -51,6 +51,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 
+			Log::debug('bpPayRequest call', $sendParams);
+
 			$response = $soapClient->__soapCall('bpPayRequest', $sendParams);
 
 			if (isset($response->return)) {
@@ -122,8 +124,9 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
-			$response   = $soapClient->__soapCall('bpVerifyRequest', $sendParams);
 
+			Log::debug('bpVerifyRequest call', $sendParams);
+			$response   = $soapClient->__soapCall('bpVerifyRequest', $sendParams);
 
 			if (isset($response->return)) {
 				Log::info('bpVerifyRequest response', ['return' => $response->return]);
@@ -178,6 +181,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
+
+			Log::debug('bpInquiryRequest call', $sendParams);
 			$response   = $soapClient->__soapCall('bpInquiryRequest', $sendParams);
 
 			if (isset($response->return)) {
@@ -234,8 +239,9 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
-			$response = $soapClient->__soapCall('bpSettleRequest', $sendParams);
 
+			Log::debug('bpSettleRequest call', $sendParams);
+			$response = $soapClient->__soapCall('bpSettleRequest', $sendParams);
 
 			if (isset($response->return)) {
 				Log::info('bpSettleRequest response', ['return' => $response->return]);
@@ -288,6 +294,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
+
+			Log::debug('bpReversalRequest call', $sendParams);
 			$response = $soapClient->__soapCall('bpReversalRequest', $sendParams);
 
 			Log::info('bpReversalRequest response', ['return' => $response->return]);
