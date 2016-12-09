@@ -53,9 +53,9 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 			$response = $soapClient->__soapCall('bpPayRequest', $sendParams);
 
-			Log::info('bpPayRequest response', $response);
-
 			if (isset($response->return)) {
+				Log::info('bpPayRequest response', ['return' => $response->return]);
+
 				$response = explode(',', $response->return);
 
 				if ($response[0] == 0) {
@@ -124,9 +124,10 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 			$response   = $soapClient->__soapCall('bpVerifyRequest', $sendParams);
 
-			Log::info('bpVerifyRequest response', $response);
 
 			if (isset($response->return)) {
+				Log::info('bpVerifyRequest response', ['return' => $response->return]);
+
 				if($response->return != '0') {
 					throw new Exception($response->return);
 				} else {
@@ -179,9 +180,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 			$response   = $soapClient->__soapCall('bpInquiryRequest', $sendParams);
 
-			Log::info('bpInquiryRequest response', $response);
-
 			if (isset($response->return)) {
+				Log::info('bpInquiryRequest response', ['return' => $response->return]);
 				if($response->return != '0') {
 					throw new Exception($response->return);
 				} else {
@@ -236,9 +236,10 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 			$response = $soapClient->__soapCall('bpSettleRequest', $sendParams);
 
-			Log::info('bpSettleRequest response', $response);
 
 			if (isset($response->return)) {
+				Log::info('bpSettleRequest response', ['return' => $response->return]);
+
 				if($response->return == '0' || $response->return == '45') {
 					$this->getInvoice()->setAfterVerified();
 					return true;
