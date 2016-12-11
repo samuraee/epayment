@@ -23,6 +23,9 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 
 		$this->public_key = trim(file_get_contents($this->public_key_path));
 		$this->private_key = trim(file_get_contents($this->private_key_path));
+
+		Log::debug('public key: '. $this->public_key_path . ' --- ' .substr($this->public_key, 0, 64));
+		Log::debug('private key: '. $this->private_key_path. ' --- ' .substr($this->private_key, 0, 64));
 	}
 
 	/**
