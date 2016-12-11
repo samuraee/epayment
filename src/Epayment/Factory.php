@@ -59,7 +59,9 @@ class Factory
 
 		// چو ن همیشه متد ها با یک پارامتر کلی بصورت آرایه فراخوانی میشوند. مثلا:
 		// $paymentGatewayHandler->generateForm($ArrayOfExtraPaymentParams)
-		$this->gateway->setParameters($arguments[0]); // set parameters
+		if (count($arguments) > 0) {
+			$this->gateway->setParameters($arguments[0]); // set parameters
+		}
 
 		try {
 			return call_user_func_array([$this->gateway, $name], $arguments); // call desire method
