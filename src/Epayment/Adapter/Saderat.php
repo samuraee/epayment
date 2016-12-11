@@ -37,7 +37,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 
 		$this->checkRequiredParameters([
 			'MID',
-			'TIM',
+			'TID',
 			'public_key',
 			'private_key',
 			'amount',
