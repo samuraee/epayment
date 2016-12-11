@@ -316,6 +316,18 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		}
 	}
 
+
+	/**
+	 * @return bool
+	 */
+	public function canContinueWithCallbackParameters()
+	{
+		if ($this->ResCode === "0" || $this->ResCode === 0) {
+			return true;
+		}
+		return false;
+	}
+
 	public function getGatewayReferenceId()
 	{
 		$this->checkRequiredParameters([

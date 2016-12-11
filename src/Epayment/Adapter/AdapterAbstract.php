@@ -211,4 +211,12 @@ abstract class AdapterAbstract
 	{
 		return $this->reverseSupport;
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function canContinueWithCallbackParameters()
+	{
+		return true;
+	}
 }

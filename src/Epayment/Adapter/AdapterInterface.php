@@ -18,4 +18,6 @@ interface AdapterInterface
     public function reverse();
 
     public function getGatewayReferenceId();
+
+    public function canContinueWithCallbackParameters();
 }
