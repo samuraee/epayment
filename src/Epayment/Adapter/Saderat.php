@@ -13,6 +13,14 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 
 	public function init()
 	{
+		if (!file_exists($this->public_key_path)) {
+			throw new Exception('epayment::epayment.saderat.errors.public_key_file_not_found');
+		}
+
+		if (!file_exists($this->private_key_path)) {
+			throw new Exception('epayment::epayment.saderat.errors.private_key_file_not_found');
+		}
+
 		$this->public_key = trim(file_get_contents($this->public_key_path));
 		$this->private_key = trim(file_get_contents($this->private_key_path));
 	}
@@ -49,15 +57,16 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 		];
 
 		try {
-			$soapClient = new SoapClient($this->getWSDL());
-
 			Log::debug('reservation call', $sendParams);
+
+			$soapClient = new SoapClient($this->getWSDL());
 
 			$response = $soapClient->__soapCall('reservation', $sendParams);
 
 			if (is_object($response)) {
 				$response = $this->obj2array($response);
 			}
+			Log::debug('reservation raw response', $response);
 
 			if (isset($response['return'])) {
 				Log::info('reservation response', $response['return']);
@@ -140,7 +149,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 		$privateKey = openssl_pkey_get_private($this->private_key);
 
 		if (!openssl_sign($source, $signature, $privateKey, OPENSSL_ALGO_SHA1)) {
-			throw new Exception('epayment::epayment.saderat.making_openssl_sign_error');
+			throw new Exception('epayment::epayment.saderat.errors.making_openssl_sign_error');
 		}
 
 		return base64_encode($signature);
