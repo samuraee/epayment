@@ -27,6 +27,9 @@ class Factory
 	     */
 	    $readyToServerGateways = explode(',', config('epayment.gateways'));
 
+	    Log::debug('selected gateway ' . $adapter);
+	    Log::debug('avaialable gateways', $readyToServerGateways);
+
 	    if (!in_array($adapter, $readyToServerGateways)) {
 		    throw new Exception(trans('epayment::epayment.gate_not_ready'));
 	    }
