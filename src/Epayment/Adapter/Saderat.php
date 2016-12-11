@@ -50,7 +50,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 
 		$sendParams = [
 			"Token_param" => [
-				"AMOUNT"        => $this->encryptText(intval($this->amount)),
+				"AMOUNT"        => $this->encryptText($this->amount),
 				"CRN"           => $this->encryptText($this->order_id),
 				"MID"           => $this->encryptText($this->MID),
 				"REFERALADRESS" => $this->encryptText($this->redirect_url),
@@ -124,16 +124,19 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 		]);
 	}
 
-	private function encryptText()
+	private function encryptText($text)
 	{
 		/**
 		 * get key resource to start based on public key
 		 */
 		$keyResource = openssl_get_publickey($this->public_key);
+		if (!$keyResource) {
+			throw new Exception('epayment::epayment.could_not_get_public_key');
+		}
 
-		openssl_public_encrypt($this->amount, $encryptedText, $keyResource);
+		openssl_public_encrypt($text, $encryptedText, $keyResource);
 
-		return $encryptedText;
+		return base64_encode($encryptedText);
 	}
 
 	private function makeSignature()
