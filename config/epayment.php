@@ -97,8 +97,8 @@ return [
 	'saderat' => [
 		'MID' => env('SADERAT_MID', ''),
 		'TID' => env('SADERAT_TID', ''),
-		'public_key_path' => storage_path(env('PASARGAD_CERT_PATH', 'payment/saderat/public.key')),
-		'private_key_path' => storage_path(env('PASARGAD_CERT_PATH', 'payment/saderat/private.key')),
+		'public_key_path' => storage_path(env('SADERAT_CERT_PATH', 'payment/saderat/public.key')),
+		'private_key_path' => storage_path(env('SADERAT_CERT_PATH', 'payment/saderat/private.key')),
 	],
 
 	/*
