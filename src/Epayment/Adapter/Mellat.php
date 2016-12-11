@@ -68,7 +68,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 					throw new Exception($response[0]);
 				}
 			} else {
-				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+				throw new Exception('epayment::epayment.invalid_response');
 			}
 		} catch (SoapFault $e) {
 			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());

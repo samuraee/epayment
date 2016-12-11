@@ -49,7 +49,10 @@ abstract class AdapterAbstract
 		}
 
 		$this->setParameters($configs);
+		$this->init();
 	}
+
+	public function init(){}
 
 	/**
 	 * @param string $key
@@ -57,7 +60,7 @@ abstract class AdapterAbstract
 	 */
 	public function __set ($key, $val)
 	{
-		$this->parameters[$key] = $val;
+		$this->parameters[$key] = trim($val);
 	}
 
 	/**
@@ -87,7 +90,7 @@ abstract class AdapterAbstract
 	public function setParameters (array $parameters = [])
 	{
 		foreach ($parameters as $key => $value) {
-			$this->parameters[$key] = $value;
+			$this->parameters[$key] = trim($value);
 		}
 		return $this;
 	}
@@ -218,5 +221,24 @@ abstract class AdapterAbstract
 	public function canContinueWithCallbackParameters()
 	{
 		return true;
+	}
+
+	protected function obj2array ($obj)
+	{
+		$out = [];
+		foreach ($obj as $key => $val) {
+			switch (true) {
+				case is_object($val):
+					$out[$key] = $this->obj2array($val);
+					break;
+				case is_array($val):
+					$out[$key] = $this->obj2array($val);
+					break;
+				default:
+					$out[$key] = $val;
+			}
+		}
+
+		return $out;
 	}
 }

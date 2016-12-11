@@ -1,154 +1,148 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
+use SoapClient;
+use SoapFault;
+use Tartan\Epayment\Adapter\Saderat\Exception;
+use Illuminate\Support\Facades\Log;
 
 class Saderat extends AdapterAbstract implements AdapterInterface
 {
-    protected $_END_POINT      = 'https://damoon.bsi.ir/DamoonPrePaymentController';
+	protected $WSDL = 'https://mabna.shaparak.ir/TokenService?wsdl';
+	protected $endPoint = 'https://mabna.shaparak.ir';
 
-    protected $_VERIFY         = 'https://Damoon.bsi.ir/DamoonVerificationController';
+	public function init()
+	{
+		$this->public_key = trim(file_get_contents($this->public_key_path));
+		$this->private_key = trim(file_get_contents($this->private_key_path));
+	}
 
-    protected $_TEST_END_POINT = 'http://banktest.ir/gateway/damoonprepayment';
+	/**
+	 * @return array
+	 * @throws Exception
+	 */
+	protected function requestToken()
+	{
+		if($this->getInvoice()->checkForRequestToken() == false) {
+			throw new Exception('epayment::epayment.could_not_request_payment');
+		}
 
-    protected $_TEST_VERIFY    = 'http://banktest.ir/gateway/damoonverification';
+		$this->checkRequiredParameters([
+			'MID',
+			'TIM',
+			'public_key',
+			'private_key',
+			'amount',
+			'order_id',
+			'redirect_url',
+		]);
 
-    protected $_PAYMENT_FORM   = 'x_show_form';
+		$sendParams = [
+			"Token_param" => [
+				"AMOUNT"        => $this->encryptText(intval($this->amount)),
+				"CRN"           => $this->encryptText($this->order_id),
+				"MID"           => $this->encryptText($this->MID),
+				"REFERALADRESS" => $this->encryptText($this->redirect_url),
+				"SIGNATURE"     => $this->makeSignature(),
+				"TID"           => $this->encryptText($this->TID),
+			]
+		];
 
-    const CURRENCY = 'Rial';
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
 
-    public $reverseSupport = false;
+			Log::debug('reservation call', $sendParams);
 
-    public $validateReturnsAmount = false;
+			$response = $soapClient->__soapCall('reservation', $sendParams);
 
-    public function setOptions(array $options = array())
-    {
-        parent::setOptions($options);
-        foreach ($this->_config as $name => $value) {
-            switch ($name) {
-            case 'x_fp_sequence':
-                $this->reservationnumber = $value;
-                break;
-            case 'x_trans_id':
-                $this->referenceid = $value;
-                break;
-            case 'x_login':
-                $this->merchantcode = $value;
-                break;
-            case 'x_amount':
-                $this->amount = $value;
-                break;
-            }
-        }
-    }
+			if (is_object($response)) {
+				$response = $this->obj2array($response);
+			}
 
-    private function _signRequest()
-    {
-        if (strlen($this->x_fp_timestamp) < 5)
-            $this->x_fp_timestamp = time();
+			if (isset($response['return'])) {
+				Log::info('reservation response', $response['return']);
 
-        $data = $this->merchantcode . '^' . $this->reservationnumber . '^' .
-            $this->x_fp_timestamp . '^' . $this->amount . '^' . self::CURRENCY;
+				if ($response['return']['result'] != 0) {
+					throw new Exception($response["return"]["token"]);
+				}
 
-        return bin2hex(mhash(MHASH_MD5, $data, $this->key));
-    }
+				if (isset($response['return']['signature'])) {
 
-    private function _validateHash($options)
-    {
-        $originalHash = array_pop($options);
-        if (isset($options['x_currency_code'])) {
-            $options['x_currency_code'] = self::CURRENCY;
-        }
-        $data = implode('^', array_values($options));
-        $realHash = bin2hex(mhash(MHASH_MD5, $data, $this->key));
+					/**
+					 * Final signature is created
+					 */
+					$signature = base64_decode($response['return']['signature']);
 
-        if ($originalHash !== $realHash)
-            return false;
-        else
-            return true;
-    }
+					/**
+					 * State whether signature is okay or not
+					 */
+					$keyResource  = openssl_get_publickey($this->public_key);
+					$verifyResult = openssl_verify($response["return"]["token"], $signature, $keyResource);
 
-    public function getInvoiceId()
-    {
-        return $this->_config['reservationnumber'];
-    }
+					if ($verifyResult == 1) {
+						$this->getInvoice()->setReferenceId($response["return"]["token"]); // update invoice reference id
+						return $response["return"]["token"];
+					} else {
+						throw new Exception('epayment::epayment.saderat.errors.invalid_verify_result');
+					}
+				}
+				else {
+					throw new Exception($response["return"]["result"]);
+				}
+			} else {
+				throw new Exception('epayment::epayment.invalid_response');
+			}
+		} catch (SoapFault $e) {
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
+	}
 
-    public function getReferenceId()
-    {
-        return $this->_config['referenceid'];
-    }
+	/**
+	 * @return mixed
+	 */
+	protected function generateForm ()
+	{
+		$token = $this->requestToken();
 
-    public function getStatus()
-    {
-    }
+		return view('epayment::mellat-form', [
+			'endPoint'    => $this->getEndPoint(),
+			'token'       => $token,
+			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
+			'autoSubmit'  => boolval($this->auto_submit)
+		]);
+	}
 
-    public function doGenerateForm(array $options = array())
-    {
-        $this->setOptions($options);
-        $this->_checkRequiredOptions(array(
-            'reservationnumber', 'merchantcode', 'amount', 'key'
-        ));
+	private function encryptText()
+	{
+		/**
+		 * get key resource to start based on public key
+		 */
+		$keyResource = openssl_get_publickey($this->public_key);
 
-        $signedData = $this->_signRequest();
+		openssl_public_encrypt($this->amount, $encryptedText, $keyResource);
 
-        $view = Zend_Layout::getMvcInstance()->getView();
+		return $encryptedText;
+	}
 
-        $form = '<form id="payment" method="post" action="' . $this->getEndPoint() . '">';
+	private function makeSignature()
+	{
+		/**
+		 * Make a signature temporary
+		 * Note: each paid has it's own specific signature
+		 */
+		$source = $this->amount . $this->order_id . $this->MID . $this->redirect_url . $this->TID;
 
-        $hash        = $view->formHidden('x_fp_hash',                  $signedData);
-        $login       = $view->formHidden('x_login',            $this->merchantcode);
-        $amount      = $view->formHidden('x_amount',                 $this->amount);
-        $currency    = $view->formHidden('x_currency_code',         self::CURRENCY);
-        $showForm    = $view->formHidden('x_show_form',        $this->PAYMENT_FORM);
-        $sequence    = $view->formHidden('x_fp_sequence', $this->reservationnumber);
-        $timestamp   = $view->formHidden('x_fp_timestamp',   $this->x_fp_timestamp);
-        $description = $view->formHidden('x_description',                    "ADP");
-        $submit      = $view->formSubmit('submit',                              '');
+		/**
+		 * Sign data and make final signature
+		 */
+		$signature = '';
 
-        $form .= $sequence . $timestamp . $hash . $description . $login . $amount .
-            $currency . $showForm . $submit . '</form>';
+		$privateKey = openssl_pkey_get_private($this->private_key);
 
-        return $form;
-    }
+		if (!openssl_sign($source, $signature, $privateKey, OPENSSL_ALGO_SHA1)) {
+			throw new Exception('epayment::epayment.saderat.making_openssl_sign_error');
+		}
 
-    public function doVerifyTransaction(array $options = array())
-    {
-        $this->setOptions($options);
-        $this->_checkRequiredOptions(array(
-            'reservationnumber', 'merchantcode', 'amount', 'key'
-        ));
-        $signedData = $this->_signRequest();
-
-        $adapter = new Zend_Http_Client_Adapter_Curl();
-        $adapter->setCurlOption(CURLOPT_SSL_VERIFYPEER, false);
-        $client = new Zend_Http_Client(
-            (APPLICATION_ENV == 'production') ? $this->_VERIFY : $this->_TEST_VERIFY,
-            array(
-                'adapter' => $adapter,
-            )
-        );
-        $client->setMethod(Zend_Http_Client::POST);
-        $client->setParameterPost('x_fp_hash',       $signedData);
-        $client->setParameterPost('x_login',         $this->merchantcode);
-        $client->setParameterPost('x_amount',        $this->amount);
-        $client->setParameterPost('x_currency_code', self::CURRENCY);
-        $client->setParameterPost('x_fp_sequence',   $this->reservationnumber);
-        $client->setParameterPost('x_fp_timestamp',  $this->x_fp_timestamp);
-        $client->setParameterPost('x_description',   "ADP");
-        $result = $client->request();
-        $body   = $result->getBody();
-
-        $contents = explode("\r\n", $body);
-        preg_match_all('|(?<key>\w+)=(?<value>\w+)?&?|', $contents[0], $response);
-        $response = array_combine($response['key'], $response['value']);
-
-        if ($this->_validateHash($response) && $response['x_response_code'] == '1')
-            return 1;
-        else
-            return 0;
-    }
-
-    public function doReverseTransaction(array $options = array())
-    {
-        throw new Fox_EPayment_Adapter_NotImplementedException();
-    }
+		return base64_encode($signature);
+	}
 }
