@@ -11,6 +11,9 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 	protected $WSDL = 'https://mabna.shaparak.ir/TokenService?wsdl';
 	protected $endPoint = 'https://mabna.shaparak.ir';
 
+	protected $testWSDL = 'https://mabna.shaparak.ir/TokenService?wsdl';
+	protected $testEndPoint = 'https://mabna.shaparak.ir';
+
 	public function init()
 	{
 		if (!file_exists($this->public_key_path)) {
@@ -64,18 +67,17 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 
 			$soapClient = new SoapClient($this->getWSDL());
 
-			$response = $soapClient->__soapCall('reservation', $sendParams);
+			$response = $soapClient->reservation($sendParams);
 
 			if (is_object($response)) {
 				$response = $this->obj2array($response);
 			}
-			Log::debug('reservation raw response', $response);
+			Log::info('reservation response', $response);
 
 			if (isset($response['return'])) {
-				Log::info('reservation response', $response['return']);
 
 				if ($response['return']['result'] != 0) {
-					throw new Exception($response["return"]["token"]);
+					throw new Exception($response["return"]["token"], $response['return']['result']);
 				}
 
 				if (isset($response['return']['signature'])) {
@@ -99,7 +101,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 					}
 				}
 				else {
-					throw new Exception($response["return"]["result"]);
+					throw new Exception('epayment::epayment.invalid_response');
 				}
 			} else {
 				throw new Exception('epayment::epayment.invalid_response');
@@ -136,6 +138,8 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 
 		openssl_public_encrypt($text, $encryptedText, $keyResource);
 
+		log::debug('encryptText('.$text.')='.base64_encode($encryptedText));
+
 		return base64_encode($encryptedText);
 	}
 
@@ -158,6 +162,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 			throw new Exception('epayment::epayment.saderat.errors.making_openssl_sign_error');
 		}
 
+		log::debug('makeSignature='.base64_encode($signature));
 		return base64_encode($signature);
 	}
 }
