@@ -118,7 +118,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 	{
 		$token = $this->requestToken();
 
-		return view('epayment::mellat-form', [
+		return view('epayment::saderat-form', [
 			'endPoint'    => $this->getEndPoint(),
 			'token'       => $token,
 			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
