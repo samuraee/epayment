@@ -3,7 +3,7 @@ namespace Tartan\Epayment\Invoice;
 
 interface InvoiceInterface
 {
-	public function setReferenceId($referenceId);
+	public function setReferenceId($referenceId, $save = true);
 
 	public function checkForRequestToken();
 
@@ -28,4 +28,6 @@ interface InvoiceInterface
 	public function getAmount();
 
 	public function setPaidAt($time = 'now');
+
+	public function setExtra($key, $value, $save = false);
 }
