@@ -18,39 +18,42 @@ class Factory
 	 * @return $this
 	 * @throws \Tartan\Epayment\Exception
 	 */
-    public function make($adapter, InvoiceInterface $invoice)
-    {
-	    $adapter = ucfirst(strtolower($adapter));
+	public function make($adapter, InvoiceInterface $invoice)
+	{
+		$adapter = ucfirst(strtolower($adapter));
 
-	    /**
-	     *  check for supported gateways
-	     */
-	    $readyToServerGateways = explode(',', config('epayment.gateways'));
+		/**
+		 *  check for supported gateways
+		 */
+		$readyToServerGateways = explode(',', config('epayment.gateways'));
 
-	    Log::debug('selected gateway ' . $adapter);
-	    Log::debug('avaialable gateways', $readyToServerGateways);
+		Log::debug('selected gateway [' . $adapter .']');
+		Log::debug('available gateways', $readyToServerGateways);
 
-	    if (!in_array($adapter, $readyToServerGateways)) {
-		    throw new Exception(trans('epayment::epayment.gate_not_ready'));
-	    }
+		if (!in_array($adapter, $readyToServerGateways)) {
+			throw new Exception(trans('epayment::epayment.gate_not_ready'));
+		}
 
-        $adapterNamespace = 'Tartan\Epayment\Adapter\\';
-        $adapterName  = $adapterNamespace . $adapter;
+		$adapterNamespace = 'Tartan\Epayment\Adapter\\';
+		$adapterName  = $adapterNamespace . $adapter;
 
-        if (!class_exists($adapterName)) {
-            throw new Exception("Adapter class '$adapterName' does not exist");
-        }
+		if (!class_exists($adapterName)) {
+			throw new Exception("Adapter class '$adapterName' does not exist");
+		}
 
-        $bankAdapter = new $adapterName($invoice, config('epayment.'.strtolower($adapter)));
+		$config = config('epayment.'.strtolower($adapter));
+		Log::debug('init gateway config', $config);
 
-        if (!$bankAdapter instanceof AdapterInterface) {
-            throw new Exception(trans('epayment::epayment.gate_not_ready'));
-        }
+		$bankAdapter = new $adapterName($invoice, $config);
 
-        $this->gateway = $bankAdapter;
+		if (!$bankAdapter instanceof AdapterInterface) {
+			throw new Exception(trans('epayment::epayment.gate_not_ready'));
+		}
 
-	    return $this;
-    }
+		$this->gateway = $bankAdapter;
+
+		return $this;
+	}
 
 	public function __call ($name, $arguments)
 	{

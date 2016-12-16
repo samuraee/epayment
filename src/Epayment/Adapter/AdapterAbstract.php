@@ -146,8 +146,8 @@ abstract class AdapterAbstract
 	protected function checkRequiredParameters (array $parameters)
 	{
 		foreach ($parameters as $parameter) {
-			if (!array_key_exists($parameter, $this->parameters)) {
-				throw new Exception("Parameters array must have a key for '$parameter'");
+			if (!array_key_exists($parameter, $this->parameters) || empty($this->parameters[$parameter])) {
+				throw new Exception("Parameters array must have a not null value for key: '$parameter'");
 			}
 		}
 	}

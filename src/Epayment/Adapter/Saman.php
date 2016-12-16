@@ -5,7 +5,7 @@ use SoapClient;
 use SoapFault;
 use Tartan\Epayment\Adapter\Saman\Exception;
 
-class Saman extends AdapterAbstract
+class Saman extends AdapterAbstract implements AdapterInterface
 {
 	protected $WSDL         = 'https://sep.shaparak.ir/payments/referencepayment.asmx?WSDL';
 	protected $tokenWSDL    = 'https://sep.shaparak.ir/Payments/InitPayment.asmx?WSDL';
