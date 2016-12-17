@@ -54,6 +54,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 				if (strlen($response) > 10) { // got string token
 					$this->getInvoice()->setReferenceId($response); // update invoice reference id
+					return $response;
 				} else {
 					throw new Exception($response); // negative integer as error
 				}
@@ -110,10 +111,13 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 		$token = $this->requestToken();
 
+		Log::info(__METHOD__, ['fetchedToken' => $token]);
+
 		return view('epayment::saman-form', [
 			'endPoint'    => $this->getEndPoint(),
-			'amount'      => intval($this->amount),
-			'merchantId'  => $this->merchant_id, // not used in this case
+			'amount'      => '',// just because of view
+			'merchantId'  => '', // just because of view
+			'orderId'     => '', // just because of view
 			'token'       => $token,
 			'redirectUrl' => $this->redirect_url,
 			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
