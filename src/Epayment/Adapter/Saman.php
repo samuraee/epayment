@@ -37,8 +37,8 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 		$sendParams = [
 			'TermID'      => $this->merchant_id,
-			'TotalAmount' => intval($this->amount),
 			'ResNum'      => $this->order_id,
+			'TotalAmount' => intval($this->amount),
 		];
 
 		try {
