@@ -127,7 +127,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 			'RefNum',
 			'ResNum',
 			'merchant_id',
-			'TraceNo',
+			'TRACENO',
 		]);
 
 		if ($this->State != 'OK') {
