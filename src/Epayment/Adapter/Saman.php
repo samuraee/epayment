@@ -109,6 +109,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 		return view('epayment::saman-form', [
 			'endPoint'    => $this->getEndPoint(),
+			'amount'      => intval($this->amount),
 			'token'       => $token,
 			'redirectUrl' => $this->redirect_url,
 			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
