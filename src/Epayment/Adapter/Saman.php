@@ -1,10 +1,10 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
-use Illuminate\Contracts\Logging\Log;
 use SoapClient;
 use SoapFault;
 use Tartan\Epayment\Adapter\Saman\Exception;
+use Illuminate\Support\Facades\Log;
 
 class Saman extends AdapterAbstract implements AdapterInterface
 {
