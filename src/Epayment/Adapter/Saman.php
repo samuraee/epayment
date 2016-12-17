@@ -218,6 +218,15 @@ class Saman extends AdapterAbstract implements AdapterInterface
 	 */
 	public function canContinueWithCallbackParameters()
 	{
+		try {
+			$this->checkRequiredParameters([
+				'RefNum',
+				'State'
+			]);
+		} catch (\Exception $e) {
+			return false;
+		}
+
 		if ($this->State == 'OK') {
 			return true;
 		}
