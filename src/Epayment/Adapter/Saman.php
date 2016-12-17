@@ -1,6 +1,7 @@
 <?php
 namespace Tartan\Epayment\Adapter;
 
+use Illuminate\Contracts\Logging\Log;
 use SoapClient;
 use SoapFault;
 use Tartan\Epayment\Adapter\Saman\Exception;
@@ -12,8 +13,8 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 	protected $endPoint     = 'https://sep.shaparak.ir/Payment.aspx';
 
-	protected $testWSDL     = 'http://banktest.ir/gateway/saman/ws?wsdl';
-	protected $testEndPoint = 'http://banktest.ir/gateway/saman/gate';
+	protected $testWSDL     = 'https://banktest.ir/gateway/saman/ws?wsdl';
+	protected $testEndPoint = 'https://banktest.ir/gateway/saman/gate';
 
 	protected $reverseSupport = true;
 
@@ -66,7 +67,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 		}
 	}
 
-	protected function generateForm()
+	public function generateForm()
 	{
 		if ($this->with_token) {
 			return $this->generateFormWithToken();
@@ -125,7 +126,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 			'State',
 			'RefNum',
 			'ResNum',
-			'MID',
+			'merchant_id',
 			'TraceNo',
 		]);
 
