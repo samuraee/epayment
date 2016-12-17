@@ -69,6 +69,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 	public function generateForm()
 	{
+		Log::debug(__METHOD__);
 		if ($this->with_token) {
 			return $this->generateFormWithToken();
 		} else {
@@ -78,6 +79,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 	protected function generateFormWithoutToken()
 	{
+		Log::debug(__METHOD__, $this->getParameters());
 		$this->checkRequiredParameters([
 			'merchant_id',
 			'amount',
@@ -98,6 +100,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 	protected function generateFormWithToken()
 	{
+		Log::debug(__METHOD__, $this->getParameters());
 		$this->checkRequiredParameters([
 			'merchant_id',
 			'order_id',
@@ -110,6 +113,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 		return view('epayment::saman-form', [
 			'endPoint'    => $this->getEndPoint(),
 			'amount'      => intval($this->amount),
+			'merchantId'  => $this->merchant_id, // not used in this case
 			'token'       => $token,
 			'redirectUrl' => $this->redirect_url,
 			'submitLabel' => !empty($this->submit_label) ? $this->submit_label : trans("epayment::epayment.goto_gate"),
