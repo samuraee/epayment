@@ -3,7 +3,7 @@ namespace Tartan\Epayment\Adapter;
 
 use SoapClient;
 use SoapFault;
-use Tartan\Epayment\Adapter\Mellat\Exception;
+use Tartan\Epayment\Adapter\Zarinpal\Exception;
 use Illuminate\Support\Facades\Log;
 
 class Zarinpal extends AdapterAbstract implements AdapterInterface
