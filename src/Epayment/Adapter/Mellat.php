@@ -53,7 +53,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 
 			Log::debug('bpPayRequest call', $sendParams);
 
-			$response = $soapClient->__soapCall('bpPayRequest', $sendParams);
+			//$response = $soapClient->__soapCall('bpPayRequest', $sendParams);
+			$response = $soapClient->bpPayRequest($sendParams);
 
 			if (isset($response->return)) {
 				Log::info('bpPayRequest response', ['return' => $response->return]);
@@ -126,7 +127,9 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 
 			Log::debug('bpVerifyRequest call', $sendParams);
-			$response   = $soapClient->__soapCall('bpVerifyRequest', $sendParams);
+
+			//$response   = $soapClient->__soapCall('bpVerifyRequest', $sendParams);
+			$response   = $soapClient->bpVerifyRequest($sendParams);
 
 			if (isset($response->return)) {
 				Log::info('bpVerifyRequest response', ['return' => $response->return]);
@@ -183,7 +186,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 
 			Log::debug('bpInquiryRequest call', $sendParams);
-			$response   = $soapClient->__soapCall('bpInquiryRequest', $sendParams);
+			//$response   = $soapClient->__soapCall('bpInquiryRequest', $sendParams);
+			$response   = $soapClient->bpInquiryRequest($sendParams);
 
 			if (isset($response->return)) {
 				Log::info('bpInquiryRequest response', ['return' => $response->return]);
@@ -241,7 +245,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 
 			Log::debug('bpSettleRequest call', $sendParams);
-			$response = $soapClient->__soapCall('bpSettleRequest', $sendParams);
+			//$response = $soapClient->__soapCall('bpSettleRequest', $sendParams);
+			$response = $soapClient->bpSettleRequest($sendParams);
 
 			if (isset($response->return)) {
 				Log::info('bpSettleRequest response', ['return' => $response->return]);
@@ -296,7 +301,8 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 			$soapClient = new SoapClient($this->getWSDL());
 
 			Log::debug('bpReversalRequest call', $sendParams);
-			$response = $soapClient->__soapCall('bpReversalRequest', $sendParams);
+			//$response = $soapClient->__soapCall('bpReversalRequest', $sendParams);
+			$response = $soapClient->bpReversalRequest($sendParams);
 
 			Log::info('bpReversalRequest response', ['return' => $response->return]);
 
