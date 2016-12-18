@@ -4,6 +4,7 @@ namespace Tartan\Epayment\Adapter;
 use SoapClient;
 use SoapFault;
 use Tartan\Epayment\Adapter\Parsian\Exception;
+use Illuminate\Support\Facades\Log;
 
 class Parsian extends AdapterAbstract implements AdapterInterface
 {
@@ -26,29 +27,33 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		}
 
 		$this->checkRequiredParameters([
-			'terminal_id',
+			'pin',
 			'order_id',
 			'amount',
 			'redirect_url',
 		]);
 
 		$sendParams = [
-			'pin'         => $this->terminal_id,
+			'pin'         => $this->pin,
 			'amount'      => intval($this->amount),
 			'orderId'     => $this->order_id,
 			'callbackUrl' => $this->redirect_url,
-			'authority'   => $this->authority ? $this->authority : 0, //default authority
-			'status'      => $this->status ? $this->status : 1, //default status
+			'authority'   => 0, //default authority
+			'status'      => 1, //default status
 		];
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
 
+			Log::debug('PinPaymentRequest call', $sendParams);
+
 			$response = $soapClient->__soapCall('PinPaymentRequest', $sendParams);
 
+			Log::debug('PinPaymentRequest response', $this->obj2array($response));
+
 			if (isset($response->status, $response->authority)) {
-				$this->setInvoiceReferenceId($response); // update invoice reference id
 				if ($response->status == 0) {
+					$this->getInvoice()->setReferenceId($response->authority); // update invoice reference id
 					return $response->authority;
 				}
 				else {
@@ -89,7 +94,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		}
 
 		$this->checkRequiredParameters([
-			'terminal_id',
+			'pin',
 			'au',
 			'rs'
 		]);
@@ -99,7 +104,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		}
 
 		$sendParams = [
-			'pin'       => $this->terminal_id,
+			'pin'       => $this->pin,
 			'authority' => $this->au,
 			'status'    => 1
 		];
@@ -107,14 +112,20 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		try {
 			$soapClient = $this->getSoapClient();
 			$sendParams = array(
-				'pin'       => $this->terminal_id,
-				'authority' => $this->getReferenceId(),
+				'pin'       => $this->pin,
+				'authority' => $this->au,
 				'status'    => 1
 			);
+
+			Log::debug('PinPaymentEnquiry call', $sendParams);
+
 			$response   = $soapClient->__soapCall('PinPaymentEnquiry', $sendParams);
+
+			Log::debug('PinPaymentEnquiry response', $this->obj2array($response));
 
 			if (isset($response->status)) {
 				if ($response->status == 0) {
+					$this->getInvoice()->setVerified();
 					return true;
 				}
 				else {
@@ -142,14 +153,13 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		}
 
 		$this->checkRequiredParameters([
-			'terminal_id',
+			'pin',
 			'order_id',
 			'reverse_order_id',
-			'authority'
 		]);
 
 		$sendParams = [
-			'pin'             => $this->terminal_id,
+			'pin'             => $this->pin,
 			'orderId'         => $this->reverse_order_id,
 			'orderToReversal' => $this->order_id,
 			'status'          => 1,
@@ -157,11 +167,15 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 
 		try {
 			$soapClient = new SoapClient($this->getWSDL());
+			Log::debug('PinReversal call', $sendParams);
+
 			$response   = $soapClient->__soapCall('PinReversal', $sendParams);
+
+			Log::debug('PinReversal response', $this->obj2array($response));
 
 			if (isset($response->status)) {
 				if ($response->status == 0) {
-					$this->setInvoiceReversed();
+					$this->getInvoice()->setReversed();
 
 					return true;
 				}

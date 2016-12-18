@@ -176,7 +176,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 		}
 
 		$this->checkRequiredParameters([
-			'ref_id',
+			'RefNum',
 			'merchant_id',
 			'password',
 			'amount'
