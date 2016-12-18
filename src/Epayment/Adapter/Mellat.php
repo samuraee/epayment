@@ -36,10 +36,10 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		]);
 
 		$sendParams = [
-			'terminalId'     => $this->terminal_id,
+			'terminalId'     => intval($this->terminal_id),
 			'userName'       => $this->username,
 			'userPassword'   => $this->password,
-			'orderId'        => $this->order_id,
+			'orderId'        => intval($this->order_id),
 			'amount'         => intval($this->amount),
 			'localDate'      => $this->local_date ? $this->local_date : date('Ymd'),
 			'localTime'      => $this->local_time ? $this->local_time : date('His'),
@@ -112,12 +112,12 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		]);
 
 		$sendParams = [
-			'terminalId'      => $this->terminal_id,
+			'terminalId'      => intval($this->terminal_id),
 			'userName'        => $this->username,
 			'userPassword'    => $this->password,
-			'orderId'         => $this->SaleOrderId, // same as SaleOrderId
-			'saleOrderId'     => $this->SaleOrderId,
-			'saleReferenceId' => $this->SaleReferenceId
+			'orderId'         => intval($this->SaleOrderId), // same as SaleOrderId
+			'saleOrderId'     => intval($this->SaleOrderId),
+			'saleReferenceId' => intval($this->SaleReferenceId)
 		];
 
 		$this->getInvoice()->setCardNumber($this->CardHolderInfo);
@@ -169,12 +169,12 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		]);
 
 		$sendParams = [
-			'terminalId'      => $this->terminal_id,
+			'terminalId'      => intval($this->terminal_id),
 			'userName'        => $this->username,
 			'userPassword'    => $this->password,
-			'orderId'         => $this->SaleOrderId, // same as SaleOrderId
-			'saleOrderId'     => $this->SaleOrderId,
-			'saleReferenceId' => $this->SaleReferenceId
+			'orderId'         => intval($this->SaleOrderId), // same as SaleOrderId
+			'saleOrderId'     => intval($this->SaleOrderId),
+			'saleReferenceId' => intval($this->SaleReferenceId)
 		];
 
 		$this->getInvoice()->setCardNumber($this->CardHolderInfo);
@@ -229,12 +229,12 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		]);
 
 		$sendParams = [
-			'terminalId'      => $this->terminal_id,
+			'terminalId'      => intval($this->terminal_id),
 			'userName'        => $this->username,
 			'userPassword'    => $this->password,
-			'orderId'         => $this->SaleOrderId, // same as orderId
-			'saleOrderId'     => $this->SaleOrderId,
-			'saleReferenceId' => $this->SaleReferenceId
+			'orderId'         => intval($this->SaleOrderId), // same as orderId
+			'saleOrderId'     => intval($this->SaleOrderId),
+			'saleReferenceId' => intval($this->SaleReferenceId)
 		];
 
 		try {
@@ -284,12 +284,12 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 		]);
 
 		$sendParams = [
-			'terminalId'      => $this->terminal_id,
+			'terminalId'      => intval($this->terminal_id),
 			'userName'        => $this->username,
 			'userPassword'    => $this->password,
-			'orderId'         => $this->SaleOrderId, // same as orderId
-			'saleOrderId'     => $this->SaleOrderId,
-			'saleReferenceId' => $this->SaleReferenceId
+			'orderId'         => intval($this->SaleOrderId), // same as orderId
+			'saleOrderId'     => intval($this->SaleOrderId),
+			'saleReferenceId' => intval($this->SaleReferenceId)
 		];
 
 		try {
