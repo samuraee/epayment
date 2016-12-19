@@ -9,7 +9,7 @@
 
 @if($autoSubmit === true)
 <script type="text/javascript">
-	var f=document.getElementById('goto_mellat_bank');
+	var f=document.getElementById('goto_saderat_bank');
   f.submit();
 </script>
 @endif
