@@ -93,4 +93,74 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 			'autoSubmit'  => boolval($this->auto_submit)
 		]);
 	}
+
+	/**
+	 * @return bool
+	 * @throws Exception
+	 */
+	protected function verifyTransaction ()
+	{
+		if($this->getInvoice()->checkForVerify() == false) {
+			throw new Exception('epayment::epayment.could_not_verify_payment');
+		}
+
+		$this->checkRequiredParameters([
+			'merchant_id',
+			'amount',
+			'Authority'
+		]);
+
+		$sendParams = [
+			'MerchantID'  => $this->merchant_id,
+			'Authority'   => $this->Authority,
+			'Amount'      => intval($this->amount),
+		];
+
+		try {
+			$soapClient = new SoapClient($this->getWSDL());
+
+			Log::debug('PaymentVerification call', $sendParams);
+
+			$response   = $soapClient->PaymentVerification($sendParams);
+
+			Log::info('PaymentVerification response', $this->obj2array($response));
+
+
+			if (isset($response->Status, $response->RefID)) {
+
+				if($response->Status == 'OK') {
+					$this->getInvoice()->setVerified();
+					$this->getInvoice()->setReferenceId($response->RefID); // update invoice reference id
+					return true;
+				} else {
+					throw new Exception($response->Status);
+				}
+			} else {
+				throw new Exception('epayment::epayment.invalid_response');
+			}
+
+		} catch (SoapFault $e) {
+
+			throw new Exception('SoapFault: ' . $e->getMessage() . ' #' . $e->getCode(), $e->getCode());
+		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function canContinueWithCallbackParameters()
+	{
+		if ($this->Status == "OK") {
+			return true;
+		}
+		return false;
+	}
+
+	public function getGatewayReferenceId()
+	{
+		$this->checkRequiredParameters([
+			'Authority',
+		]);
+		return $this->Authority;
+	}
 }

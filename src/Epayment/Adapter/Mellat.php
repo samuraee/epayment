@@ -141,7 +141,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 					return true;
 				}
 			} else {
-				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+				throw new Exception('epayment::epayment.invalid_response');
 			}
 
 		} catch (SoapFault $e) {
@@ -198,7 +198,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 					return true;
 				}
 			} else {
-				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+				throw new Exception('epayment::epayment.invalid_response');
 			}
 
 		} catch (SoapFault $e) {
@@ -258,7 +258,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 					throw new Exception($response->return);
 				}
 			} else {
-				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+				throw new Exception('epayment::epayment.invalid_response');
 			}
 
 		} catch (\SoapFault $e) {
@@ -314,7 +314,7 @@ class Mellat extends AdapterAbstract implements AdapterInterface
 					throw new Exception($response->return);
 				}
 			} else {
-				throw new Exception('epayment::epayment.mellat.errors.invalid_response');
+				throw new Exception('epayment::epayment.invalid_response');
 			}
 
 		} catch (SoapFault $e) {
