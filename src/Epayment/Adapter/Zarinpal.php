@@ -128,7 +128,7 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 
 			if (isset($response->Status, $response->RefID)) {
 
-				if($response->Status == 'OK') {
+				if($response->Status == 100) {
 					$this->getInvoice()->setVerified();
 					$this->getInvoice()->setReferenceId($response->RefID); // update invoice reference id
 					return true;
