@@ -7,7 +7,9 @@ class Exception extends \Tartan\Epayment\Exception
 
 	public function __construct($message = "", $code = 0, Exception $previous = null)
 	{
-		$gate = strtolower(end(explode('\\', __NAMESPACE__)));
+		$gate = explode('\\', __NAMESPACE__);
+		$gate = end($gate);
+		$gate = strtolower($gate);
 
 		switch ($message)
 		{

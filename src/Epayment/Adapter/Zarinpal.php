@@ -10,16 +10,16 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 {
 	protected $WSDL = 'https://www.zarinpal.com/pg/services/WebGate/wsdl';
 
-	protected $endPoint = 'https://www.zarinpal.com/pg/StartPay/‫‪{authority}‬‬';
-	protected $zarinEndPoint = 'https://www.zarinpal.com/pg/StartPay/‫‪{authority}‫‪/ZarinGate‬‬‬‬';
-	protected $mobileEndPoint = '‫‪https://www.zarinpal.com/pg/StartPay/‫‪{authority}/MobileGate‬‬‬‬‬‬';
+	protected $endPoint = 'https://www.zarinpal.com/pg/StartPay/{authority}';
+	protected $zarinEndPoint = 'https://www.zarinpal.com/pg/StartPay/{authority}/ZarinGate';
+	protected $mobileEndPoint = 'https://www.zarinpal.com/pg/StartPay/{authority}/MobileGate';
 
 
 	protected $testWSDL = 'https://sandbox.zarinpal.com/pg/services/WebGate/wsdl';
-	protected $testEndPoint = 'https://sandbox.zarinpal.com/pg/StartPay/‫‪{authority}‬‬';
+	protected $testEndPoint = 'https://sandbox.zarinpal.com/pg/StartPay/{authority}';
 
 //	protected $testWSDL = 'https://banktest.ir/gateway/zarinpal/ws?wsdl';
-//	protected $testEndPoint = 'https://banktest.ir/gateway/zarinpal/gate/pay_invoice/‫‪{authority}';
+//	protected $testEndPoint = 'https://banktest.ir/gateway/zarinpal/gate/pay_invoice/{authority}';
 
 	public $reverseSupport = false;
 
