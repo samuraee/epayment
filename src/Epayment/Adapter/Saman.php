@@ -42,7 +42,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 		];
 
 		try {
-			$soapClient = new SoapClient($this->getWSDL());
+            $soapClient = $this->getSoapClient();
 
 			Log::debug('RequestToken call', $sendParams);
 
@@ -144,7 +144,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 		}
 
 		try {
-			$soapClient = new SoapClient($this->getWSDL());
+            $soapClient = $this->getSoapClient();
 
 			Log::info('VerifyTransaction call', [$this->RefNum, $this->merchant_id]);
 			$response = $soapClient->VerifyTransaction($this->RefNum, $this->merchant_id);
@@ -183,7 +183,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 		]);
 
 		try {
-			$soapClient = new SoapClient($this->getWSDL());
+            $soapClient = $this->getSoapClient();
 
 			Log::info('reverseTransaction call', [$this->RefNum, $this->merchant_id]);
 			$response = $soapClient->reverseTransaction(

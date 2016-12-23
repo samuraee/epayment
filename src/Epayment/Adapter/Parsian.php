@@ -43,7 +43,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		];
 
 		try {
-			$soapClient = new SoapClient($this->getWSDL());
+            $soapClient = $this->getSoapClient();
 
 			Log::debug('PinPaymentRequest call', $sendParams);
 
@@ -110,7 +110,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		];
 
 		try {
-			$soapClient = $this->getSoapClient();
+            $soapClient = $this->getSoapClient();
 			$sendParams = array(
 				'pin'       => $this->pin,
 				'authority' => $this->au,
@@ -166,7 +166,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 		];
 
 		try {
-			$soapClient = new SoapClient($this->getWSDL());
+			$soapClient = $this->getSoapClient();
 			Log::debug('PinReversal call', $sendParams);
 
 			$response   = $soapClient->__soapCall('PinReversal', $sendParams);

@@ -19,7 +19,7 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 	protected $testEndPoint = 'https://sandbox.zarinpal.com/pg/StartPay/{authority}';
 
 //	protected $testWSDL = 'https://banktest.ir/gateway/zarinpal/ws?wsdl';
-//	protected $testEndPoint = 'https://banktest.ir/gateway/zarinpal/gate/pay_invoice/{authority}';
+//	protected $testEndPoint = 'https://banktest.ir/gateway/zarinpal/gate/{authority}';
 
 	public $reverseSupport = false;
 

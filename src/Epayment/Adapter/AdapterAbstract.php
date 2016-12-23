@@ -190,7 +190,16 @@ abstract class AdapterAbstract
 		$this->soapOptions = $options;
 	}
 
-	/**
+    /**
+     * @return array
+     */
+	protected function getSoapOptions()
+    {
+        return $this->soapOptions;
+    }
+
+
+    /**
 	 * @return SoapClient
 	 */
 	protected function getSoapClient()

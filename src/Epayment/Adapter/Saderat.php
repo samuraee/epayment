@@ -70,7 +70,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 		try {
 			Log::debug('reservation call', $sendParams);
 
-			$soapClient = new SoapClient($this->getWSDL());
+            $soapClient = $this->getSoapClient();
 
 			$response = $soapClient->reservation($sendParams);
 
@@ -163,7 +163,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 		try {
 			Log::debug('sendConfirmation call', $sendParams);
 
-			$soapClient = new SoapClient($this->getVerifyWSDL());
+			$soapClient = new SoapClient($this->getVerifyWSDL(), $this->getSoapOptions());
 
 			$response = $soapClient->sendConfirmation($sendParams);
 
