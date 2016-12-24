@@ -204,7 +204,7 @@ abstract class AdapterAbstract
 	 */
 	protected function getSoapClient()
 	{
-		return new SoapClient($this->getWSDL(), $this->soapOptions);
+		return new SoapClient($this->getWSDL(), $this->getSoapOptions());
 	}
 
 	/**
