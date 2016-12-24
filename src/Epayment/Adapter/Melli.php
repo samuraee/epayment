@@ -7,9 +7,9 @@ class Melli extends AdapterAbstract implements AdapterInterface
 
     protected $_VERIFY         = 'https://damoon.bankmelli-iran.com/DamoonVerificationController';
 
-    protected $_TEST_END_POINT = 'http://banktest.ir/gateway/damoonprepayment';
+    protected $_TEST_END_POINT = 'https://banktest.ir/gateway/damoonprepayment';
 
-    protected $_TEST_VERIFY    = 'http://banktest.ir/gateway/damoonverification';
+    protected $_TEST_VERIFY    = 'https://banktest.ir/gateway/damoonverification';
 
     protected $_PAYMENT_FORM   = 'x_show_form';
 

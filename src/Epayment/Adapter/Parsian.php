@@ -11,8 +11,8 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	protected $WSDL = 'https://pec.shaparak.ir/pecpaymentgateway/eshopservice.asmx?WSDL';
 	protected $endPoint = 'https://pec.shaparak.ir/pecpaymentgateway';
 
-	protected $testWSDL = 'http://banktest.ir/gateway/parsian/ws?wsdl';
-	protected $testEndPoint = 'http://banktest.ir/gateway/parsian/gate';
+	protected $testWSDL = 'https://banktest.ir/gateway/parsian/ws?wsdl';
+	protected $testEndPoint = 'https://banktest.ir/gateway/parsian/gate';
 
 	protected $reverseSupport = true;
 

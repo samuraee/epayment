@@ -21,8 +21,8 @@ class Payline extends AdapterAbstract implements AdapterInterface
     const API_GET_TOKEN_URL      = '‫‪http://payline.ir/payment-test/gateway-send‬‬';
     const API_CONFIRM_URL        = '‫‪http://payline.ir/payment-test/gateway-result-second‬‬';
 
-    const TEST_API_GET_TOKEN_URL = 'http://banktest.ir/gateway/payline/gateway-send';
-    const TEST_API_CONFIRM_URL   = 'http://banktest.ir/gateway/payline/gateway-result-second';
+    const TEST_API_GET_TOKEN_URL = 'https://banktest.ir/gateway/payline/gateway-send';
+    const TEST_API_CONFIRM_URL   = 'https://banktest.ir/gateway/payline/gateway-result-second';
 
     /**
      * @var Zend_Http_Client
