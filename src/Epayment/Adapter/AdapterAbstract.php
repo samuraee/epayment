@@ -178,6 +178,7 @@ abstract class AdapterAbstract
 
 	/**
 	 * @param array $options
+     * @deprecated
 	 *
 	 * 'login'       => config('api.basic.username'),
 	 * 'password'    => config('api.basic.password'),
@@ -192,6 +193,7 @@ abstract class AdapterAbstract
 
     /**
      * @return array
+     * @deprecated
      */
 	protected function getSoapOptions()
     {
