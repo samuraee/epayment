@@ -128,4 +128,29 @@ return [
 		'mobile'       => env('ZARINPAL_MOBILE', '09xxxxxxxxx'),
 		'description'  => env('ZARINPAL_MOBILE', 'powered-by-TartanPayment'),
 	],
+
+    /*
+    |--------------------------------------------------------------------------
+    | SoapClient Options
+    |--------------------------------------------------------------------------
+    |
+    | useOptions: true/false
+    | options: soapClient Options
+    |
+    */
+    'soap' => [
+        'useOptions' => env('SOAP_HAS_OPTIONS', false),
+        'options' => [
+            'proxy_host' => env('SOAP_PROXY_HOST', ''),
+            'proxy_port' => env('SOAP_PROXY_PORT', ''),
+            'stream_context' => stream_context_create(
+                [
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ],
+                ]
+            ),
+        ]
+    ]
 ];
