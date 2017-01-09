@@ -52,7 +52,6 @@ class Factory
 
 		// setting soapClient options if required
 		if (config('epayment.soap.useOptions') == true) {
-            Log::debug('soap options set');
             $bankAdapter->setSoapOptions(config('epayment.soap.options'));
         }
 

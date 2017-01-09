@@ -188,7 +188,8 @@ abstract class AdapterAbstract
 	 */
 	public function setSoapOptions(array $options = [])
 	{
-		$this->soapOptions = $options;
+        Log::debug('soap options set', $options);
+        $this->soapOptions = $options;
 	}
 
     /**
