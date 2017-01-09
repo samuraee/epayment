@@ -186,7 +186,7 @@ abstract class AdapterAbstract
 	 * 'proxy_port' => '8080'
 	 *
 	 */
-	protected function setSoapOptions(array $options = [])
+	public function setSoapOptions(array $options = [])
 	{
 		$this->soapOptions = $options;
 	}
