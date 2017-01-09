@@ -50,6 +50,11 @@ class Factory
 			throw new Exception(trans('epayment::epayment.gate_not_ready'));
 		}
 
+		// setting soapClient options if required
+		if (config('epayment.soap.useOptions') == true) {
+		    $this->gateway->setSoapOptions(config('epayment.soap.options'));
+        }
+
 		$this->gateway = $bankAdapter;
 
 		return $this;
