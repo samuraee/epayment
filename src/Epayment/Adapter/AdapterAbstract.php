@@ -3,6 +3,7 @@ namespace Tartan\Epayment\Adapter;
 
 use SoapClient;
 use Tartan\Epayment\Invoice\InvoiceInterface;
+use Illuminate\Support\Facades\Log;
 
 abstract class AdapterAbstract
 {
