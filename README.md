@@ -19,10 +19,10 @@ Tartan\Epayment\EpaymentServiceProvider::class,
 ```php
 'Epayment' => Tartan\Epayment\Facades\Epayment::class,
 ```
-4.Publish the config file
+4.Publish the package assets and configs
 
 ```bash
-php artisan vendor:publish --tag=config
+php artisan vendor:publish
 ```
 
 5. Preparing your db (eloquent) model for epayment integration
