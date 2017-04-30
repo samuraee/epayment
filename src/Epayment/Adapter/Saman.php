@@ -24,7 +24,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 	 */
 	protected function requestToken()
 	{
-		if($this->getInvoice()->checkForRequestToken() == false) {
+		if($this->getTransaction()->checkForRequestToken() == false) {
 			throw new Exception('epayment::epayment.could_not_request_payment');
 		}
 
@@ -53,7 +53,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 				Log::info('RequestToken response', ['response' => $response]);
 
 				if (strlen($response) > 10) { // got string token
-					$this->getInvoice()->setReferenceId($response); // update invoice reference id
+					$this->getTransaction()->setReferenceId($response); // update transaction reference id
 					return $response;
 				} else {
 					throw new Exception($response); // negative integer as error
@@ -127,7 +127,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 	protected function verifyTransaction()
 	{
-		if($this->getInvoice()->checkForVerify() == false) {
+		if($this->getTransaction()->checkForVerify() == false) {
 			throw new Exception('epayment::epayment.could_not_verify_payment');
 		}
 
@@ -153,8 +153,8 @@ class Saman extends AdapterAbstract implements AdapterInterface
 			{
 				Log::info('VerifyTransaction response', ['response' => $response]);
 
-				if ($response == $this->getInvoice()->getAmount()) { // check by invoice amount
-					$this->getInvoice()->setVerified();
+				if ($response == $this->getTransaction()->getAmount()) { // check by transaction amount
+					$this->getTransaction()->setVerified();
 					return true;
 				} else {
 					throw new Exception($response);
@@ -171,7 +171,7 @@ class Saman extends AdapterAbstract implements AdapterInterface
 
 	protected function reverseTransaction()
 	{
-		if ($this->reverseSupport == false || $this->getInvoice()->checkForReverse() == false) {
+		if ($this->reverseSupport == false || $this->getTransaction()->checkForReverse() == false) {
 			throw new Exception('epayment::epayment.could_not_reverse_payment');
 		}
 
@@ -197,8 +197,8 @@ class Saman extends AdapterAbstract implements AdapterInterface
 			{
 				Log::info('reverseTransaction response', ['response' => $response]);
 
-				if ($response === 1) { // check by invoice amount
-					$this->getInvoice()->setReversed();
+				if ($response === 1) { // check by transaction amount
+					$this->getTransaction()->setReversed();
 					return true;
 				} else {
 					throw new Exception($response);

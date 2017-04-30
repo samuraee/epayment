@@ -41,7 +41,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 	 */
 	protected function requestToken ()
 	{
-		if ($this->getInvoice()->checkForRequestToken() == false) {
+		if ($this->getTransaction()->checkForRequestToken() == false) {
 			throw new Exception('epayment::epayment.could_not_request_payment');
 		}
 
@@ -63,7 +63,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 				"REFERALADRESS" => $this->encryptText($this->redirect_url),
 				"SIGNATURE"     => $this->makeSignature('token'),
 				"TID"           => $this->encryptText($this->TID),
-				"Payload"       => $this->getInvoice()->description
+				"Payload"       => $this->getTransaction()->description
 			]
 		];
 
@@ -99,7 +99,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 					$verifyResult = openssl_verify($response["return"]["token"], $signature, $keyResource);
 
 					if ($verifyResult == 1) {
-						$this->getInvoice()->setReferenceId($response["return"]["token"]); // update invoice reference id
+						$this->getTransaction()->setReferenceId($response["return"]["token"]); // update transaction reference id
 						return $response["return"]["token"];
 					}
 					else {
@@ -135,7 +135,7 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 
 	protected function verifyTransaction ()
 	{
-		if ($this->getInvoice()->checkForVerify() == false) {
+		if ($this->getTransaction()->checkForVerify() == false) {
 			throw new Exception('epayment::epayment.could_not_verify_payment');
 		}
 
@@ -197,15 +197,15 @@ class Saderat extends AdapterAbstract implements AdapterInterface
 						// success
 						// update server description
 						if ($response['return']['description'] != "") {
-							$this->getInvoice()->setExtra('description', $response['return']['description'], false);
+							$this->getTransaction()->setExtra('description', $response['return']['description'], false);
 						}
-						$this->getInvoice()->setExtra('stan', $response['return']['STAN'], false);
-						$this->getInvoice()->setExtra('repeat', $response['return']['REPETETIVE'], false);
+						$this->getTransaction()->setExtra('stan', $response['return']['STAN'], false);
+						$this->getTransaction()->setExtra('repeat', $response['return']['REPETETIVE'], false);
 						//update server side transaction time
-						$this->getInvoice()->setExtra('server_paid_at', date("Y") . $response["return"]["DATE"] . ' ' . $response['return']['TIME']);
-						$this->getInvoice()->setReferenceId($response['return']['TRN'], $save = false) ;
+						$this->getTransaction()->setExtra('server_paid_at', date("Y") . $response["return"]["DATE"] . ' ' . $response['return']['TIME']);
+						$this->getTransaction()->setReferenceId($response['return']['TRN'], $save = false) ;
 
-						$this->getInvoice()->setVerified(); // calls SAVE too
+						$this->getTransaction()->setVerified(); // calls SAVE too
 
 						return true; // successful verify
 

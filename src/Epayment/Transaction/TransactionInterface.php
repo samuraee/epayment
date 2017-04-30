@@ -1,7 +1,7 @@
 <?php
-namespace Tartan\Epayment\Invoice;
+namespace Tartan\Epayment\Transaction;
 
-interface InvoiceInterface
+interface TransactionInterface
 {
 	public function setReferenceId($referenceId, $save = true);
 

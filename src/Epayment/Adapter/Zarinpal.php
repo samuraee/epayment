@@ -29,7 +29,7 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 	 */
 	protected function requestToken ()
 	{
-		if ($this->getInvoice()->checkForRequestToken() == false) {
+		if ($this->getTransaction()->checkForRequestToken() == false) {
 			throw new Exception('epayment::epayment.could_not_request_payment');
 		}
 
@@ -64,7 +64,7 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 			if (isset($response->Status)) {
 
 				if ($response->Status == 100) {
-					$this->getInvoice()->setReferenceId($response->Authority); // update invoice reference id
+					$this->getTransaction()->setReferenceId($response->Authority); // update transaction reference id
 					return $response->Authority;
 				}
 				else {
@@ -100,7 +100,7 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 	 */
 	protected function verifyTransaction ()
 	{
-		if($this->getInvoice()->checkForVerify() == false) {
+		if($this->getTransaction()->checkForVerify() == false) {
 			throw new Exception('epayment::epayment.could_not_verify_payment');
 		}
 
@@ -129,8 +129,8 @@ class Zarinpal extends AdapterAbstract implements AdapterInterface
 			if (isset($response->Status, $response->RefID)) {
 
 				if($response->Status == 100) {
-					$this->getInvoice()->setVerified();
-					$this->getInvoice()->setReferenceId($response->RefID); // update invoice reference id
+					$this->getTransaction()->setVerified();
+					$this->getTransaction()->setReferenceId($response->RefID); // update transaction reference id
 					return true;
 				} else {
 					throw new Exception($response->Status);

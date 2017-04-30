@@ -72,9 +72,9 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 			'tref',
 		]);
 
-		// update invoice transaction reference number
+		// update transaction reference number
 		if (!empty($this->tref)) {
-			$this->setInvoiceReferenceId($this->tref); // update invoice reference id
+			$this->setInvoiceReferenceId($this->tref); // update transaction reference id
 		}
 
 		$processor = new RSAProcessor(config('epayment.pasargad.certificate_path'), RSAKeyType::XMLFile);
@@ -83,7 +83,7 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 		$merchantCode  = config('epayment.pasargad.merchantId');
 		$invoiceNumber = $this->iN;
 		$invoiceDate   = $this->iD;
-		$amount        = $this->getInvoice()->getAmount();
+		$amount        = $this->getTransaction()->getAmount();
 		$timeStamp     = date("Y/m/d H:i:s");
 
 		$data          = "#" . $merchantCode . "#" . $terminalCode . "#" . $invoiceNumber . "#" . $invoiceDate . "#" . $amount . "#" . $timeStamp . "#";
@@ -111,7 +111,7 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 		if ($array['result'] != "True") {
 			throw new Exception('epayment::epayment.verification_failed');
 		} else {
-			$this->getInvoice()->setCompleted();
+			$this->getTransaction()->setCompleted();
 			return true;
 		}
 	}
@@ -124,9 +124,9 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 			'tref',
 		]);
 
-		// update invoice transaction reference number
+		// update transaction reference number
 		if (!empty($this->tref)) {
-			$this->setInvoiceReferenceId($this->tref); // update invoice reference id
+			$this->setInvoiceReferenceId($this->tref); // update transaction reference id
 		}
 
 		$processor = new RSAProcessor(config('epayment.pasargad.certificate_path'), RSAKeyType::XMLFile);
@@ -135,7 +135,7 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 		$merchantCode  = config('epayment.pasargad.merchantId');
 		$invoiceNumber = $this->iN;
 		$invoiceDate   = $this->iD;
-		$amount        = $this->getInvoice()->getAmount();
+		$amount        = $this->getTransaction()->getAmount();
 		$timeStamp     = date("Y/m/d H:i:s");
 		$action        = 1004; // reverse code
 
@@ -164,7 +164,7 @@ class Pasargad extends AdapterAbstract implements AdapterInterface
 		if ($array['result'] != "True") {
 			throw new Exception('epayment::epayment.reversed_failed');
 		} else {
-			$this->getInvoice()->setReversed();
+			$this->getTransaction()->setReversed();
 			return true;
 		}
 	}

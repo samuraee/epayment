@@ -2,7 +2,7 @@
 namespace Tartan\Epayment\Adapter;
 
 use SoapClient;
-use Tartan\Epayment\Invoice\InvoiceInterface;
+use Tartan\Epayment\Transaction\TransactionInterface;
 use Illuminate\Support\Facades\Log;
 
 abstract class AdapterAbstract
@@ -23,9 +23,9 @@ abstract class AdapterAbstract
 	protected $soapOptions = [];
 
 	/**
-	 * @var InvoiceInterface
+	 * @var TransactionInterface
 	 */
-	protected $invoice;
+	protected $transaction;
 
 	/**
 	 * specifies if gateway supports transaction reverse or not
@@ -36,17 +36,17 @@ abstract class AdapterAbstract
 	/**
 	 * AdapterAbstract constructor.
 	 *
-	 * @param InvoiceInterface $invoice
+	 * @param TransactionInterface $transaction
 	 * @param array $configs
 	 *
 	 * @throws Exception
 	 */
-	public function __construct (InvoiceInterface $invoice, array $configs = [])
+	public function __construct (TransactionInterface $transaction, array $configs = [])
 	{
-		$this->invoice = $invoice;
+		$this->transaction = $transaction;
 
-		if ($this->invoice->checkForRequestToken() == false) {
-			throw new Exception('could not handle this invoice payment');
+		if ($this->transaction->checkForRequestToken() == false) {
+			throw new Exception('could not handle this transaction payment');
 		}
 
 		$this->setParameters($configs);
@@ -76,11 +76,11 @@ abstract class AdapterAbstract
 
 
 	/**
-	 * @return InvoiceInterface
+	 * @return TransactionInterface
 	 */
-	public function getInvoice ()
+	public function getTransaction ()
 	{
-		return $this->invoice;
+		return $this->transaction;
 	}
 
 	/**
@@ -125,7 +125,7 @@ abstract class AdapterAbstract
 	 */
 	public function afterVerify()
 	{
-		$this->getInvoice()->setAfterVerified(); // عملیات پیش فرض در صورت عدم نیاز
+		$this->getTransaction()->setAfterVerified(); // عملیات پیش فرض در صورت عدم نیاز
 		return true;
 	}
 

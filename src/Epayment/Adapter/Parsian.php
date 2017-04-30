@@ -22,7 +22,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	 */
 	protected function requestToken ()
 	{
-		if ($this->getInvoice()->checkForRequestToken() == false) {
+		if ($this->getTransaction()->checkForRequestToken() == false) {
 			throw new Exception('epayment::epayment.could_not_request_payment');
 		}
 
@@ -53,7 +53,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 
 			if (isset($response->status, $response->authority)) {
 				if ($response->status == 0) {
-					$this->getInvoice()->setReferenceId($response->authority); // update invoice reference id
+					$this->getTransaction()->setReferenceId($response->authority); // update transaction reference id
 					return $response->authority;
 				}
 				else {
@@ -89,7 +89,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	 */
 	protected function verifyTransaction ()
 	{
-		if ($this->getInvoice()->checkForVerify() == false) {
+		if ($this->getTransaction()->checkForVerify() == false) {
 			throw new Exception('epayment::epayment.could_not_verify_payment');
 		}
 
@@ -125,7 +125,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 
 			if (isset($response->status)) {
 				if ($response->status == 0) {
-					$this->getInvoice()->setVerified();
+					$this->getTransaction()->setVerified();
 					return true;
 				}
 				else {
@@ -148,7 +148,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 	 */
 	protected function reverseTransaction ()
 	{
-		if ($this->reverseSupport == false || $this->getInvoice()->checkForReverse() == false) {
+		if ($this->reverseSupport == false || $this->getTransaction()->checkForReverse() == false) {
 			throw new Exception('epayment::epayment.could_not_reverse_payment');
 		}
 
@@ -175,7 +175,7 @@ class Parsian extends AdapterAbstract implements AdapterInterface
 
 			if (isset($response->status)) {
 				if ($response->status == 0) {
-					$this->getInvoice()->setReversed();
+					$this->getTransaction()->setReversed();
 
 					return true;
 				}

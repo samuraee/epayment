@@ -2,7 +2,7 @@
 namespace Tartan\Epayment;
 
 use Tartan\Epayment\Adapter\AdapterInterface;
-use Tartan\Epayment\Invoice\InvoiceInterface;
+use Tartan\Epayment\Transaction\TransactionInterface;
 use Illuminate\Support\Facades\Log;
 
 class Factory
@@ -13,12 +13,12 @@ class Factory
 	protected $gateway;
 	/**
 	 * @param $adapter
-	 * @param InvoiceInterface $invoice
+	 * @param TransactionInterface $invoice
 	 *
 	 * @return $this
 	 * @throws \Tartan\Epayment\Exception
 	 */
-	public function make($adapter, InvoiceInterface $invoice)
+	public function make($adapter, TransactionInterface $invoice)
 	{
 		$adapter = ucfirst(strtolower($adapter));
 
