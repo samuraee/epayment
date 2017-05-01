@@ -23,21 +23,22 @@ return [
 	|
 	| specifies ready to serve gateways.
 	| gateway characters are case sensitive and should be exactly same as their folder name.
-	|    eg, "Jahanpay" is correct not "JahanPay" or "jahanpay"
+	|    eg, "Pasargad" is correct not "PasarGad" or "pasargad"
 	| the gateways list is comma separated
 	|
 	*/
 	'gateways' => env('EPAYMENT_GATES', 'Mellat,Saman,Pasargad'),
 
-	/*
-	|--------------------------------------------------------------------------
-	| Jahanpay gateway configuration
-	|--------------------------------------------------------------------------
-	*/
-	'jahanpay' => [
-		'api'          => env('JAHANPAY_API', ''),
-		'callback_url' => env('JAHANPAY_CALLBACK_URL', '')
-	],
+    /*
+    |--------------------------------------------------------------------------
+    | reverse policy of epayment transactions
+    |--------------------------------------------------------------------------
+    |
+    | specifies that should thew component reverse verified transactions if
+    | serving to customer was not successful or not
+    |
+    */
+    'reverse_mode' => env('PAYMENT_REVERSE_MODE', false),
 
 	/*
 	|--------------------------------------------------------------------------
