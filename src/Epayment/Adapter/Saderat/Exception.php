@@ -2,4 +2,6 @@
 
 namespace Tartan\Epayment\Adapter\Saderat;
 
-class Exception extends \Tartan\Epayment\Adapter\Exception {}
+class Exception extends \Tartan\Epayment\Adapter\Exception {
+    protected $adapter = 'saderat';
+}

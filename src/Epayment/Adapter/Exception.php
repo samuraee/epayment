@@ -5,9 +5,11 @@ class Exception extends \Tartan\Epayment\Exception
 {
 	const UNHANDLED_ERR = 999;
 
+	protected $adapter = 'epaymentadapter';
+
 	public function __construct($message = "", $code = 0, Exception $previous = null)
 	{
-		$gate = explode('\\', __NAMESPACE__);
+		$gate = explode('\\', $this->adapter );
 		$gate = end($gate);
 		$gate = strtolower($gate);
 
@@ -15,7 +17,7 @@ class Exception extends \Tartan\Epayment\Exception
 		{
 			case is_numeric($message): {
 				$code = $message;
-				$message = trans('epayment::epayment.'.$gate.'.errors.error_' . str_replace('-', '_', strval($message))); // fetch message from translation file
+				$message = 'epayment::epayment.'.$gate.'.errors.error_' . str_replace('-', '_', strval($message)); // fetch message from translation file
 				break;
 			}
 
